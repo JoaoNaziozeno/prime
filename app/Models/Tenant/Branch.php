@@ -115,4 +115,12 @@ class Branch extends Model
     {
         return $this->vehicles()->active()->count();
     }
+
+    /**
+     * Register custom factory
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\Tenant\BranchFactory::new();
+    }
 }

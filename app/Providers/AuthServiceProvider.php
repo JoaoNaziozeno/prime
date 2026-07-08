@@ -11,15 +11,27 @@ use App\Models\Tenant\Customer;
 use App\Models\Tenant\Branch;
 use App\Models\Tenant\Driver;
 use App\Models\Tenant\Vehicle;
+use App\Models\Tenant\OrderOfService;
+use App\Models\Tenant\OrderItem;
+use App\Models\Tenant\Product;
+use App\Models\Tenant\ProductCategory;
+use App\Models\Tenant\Service;
+use App\Models\Tenant\ServiceCategory;
 use App\Policies\UserPolicy;
 use App\Policies\CompanyPolicy;
 use App\Policies\PlanPolicy;
 use App\Policies\SubscriptionPolicy;
 use App\Policies\TenantPolicy;
-use App\Policies\CustomerPolicy;
-use App\Policies\BranchPolicy;
-use App\Policies\DriverPolicy;
-use App\Policies\VehiclePolicy;
+use App\Policies\Tenant\CustomerPolicy;
+use App\Policies\Tenant\BranchPolicy;
+use App\Policies\Tenant\DriverPolicy;
+use App\Policies\Tenant\VehiclePolicy;
+use App\Policies\Tenant\OrderOfServicePolicy;
+use App\Policies\Tenant\OrderItemPolicy;
+use App\Policies\Tenant\ProductPolicy;
+use App\Policies\Tenant\ProductCategoryPolicy;
+use App\Policies\Tenant\ServicePolicy;
+use App\Policies\Tenant\ServiceCategoryPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -42,6 +54,12 @@ class AuthServiceProvider extends ServiceProvider
         Branch::class => BranchPolicy::class,
         Driver::class => DriverPolicy::class,
         Vehicle::class => VehiclePolicy::class,
+        OrderOfService::class => OrderOfServicePolicy::class,
+        OrderItem::class => OrderItemPolicy::class,
+        Product::class => ProductPolicy::class,
+        ProductCategory::class => ProductCategoryPolicy::class,
+        Service::class => ServicePolicy::class,
+        ServiceCategory::class => ServiceCategoryPolicy::class,
     ];
 
     /**

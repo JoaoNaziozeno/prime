@@ -201,4 +201,12 @@ class Driver extends Model
     {
         return $this->isActive() && $this->cnh_expiration >= now()->toDateString();
     }
+
+    /**
+     * Register custom factory
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\Tenant\DriverFactory::new();
+    }
 }

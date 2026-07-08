@@ -174,6 +174,14 @@ class Customer extends Model
     }
 
     /**
+     * Register custom factory
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\Tenant\CustomerFactory::new();
+    }
+
+    /**
      * Methods
      */
     public function isActive(): bool

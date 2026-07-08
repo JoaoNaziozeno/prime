@@ -218,4 +218,12 @@ class Vehicle extends Model
     {
         return $this->isActive() && (!$this->license_expiration || $this->license_expiration >= now()->toDateString());
     }
+
+    /**
+     * Register custom factory
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\Tenant\VehicleFactory::new();
+    }
 }

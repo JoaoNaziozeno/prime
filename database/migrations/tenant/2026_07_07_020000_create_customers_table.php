@@ -46,8 +46,6 @@ return new class extends Migration
 
             // Indexes
             $table->index(['status', 'created_at']);
-            $table->index('email');
-            $table->index('cpf_cnpj');
         });
     }
 

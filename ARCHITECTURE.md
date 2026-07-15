@@ -259,6 +259,10 @@ Utilizamos **Resource Controllers** com responsabilidades claras:
 
 **Regra:** Lógica complexa vai em Services, não em Controllers.
 
+### Controllers do Tenant
+- **ServiceController (Tenant):** Gerenciamento de serviços (cadastro, listagem com buscas e filtros, alteração de status, margens de lucro e categorias).
+- **ProductController (Tenant):** Gerenciamento de peças/produtos com precificação e controle de categorias.
+
 ---
 
 ## 7. Livewire Components
@@ -343,12 +347,17 @@ tests/
 ## 11. Próximos Passos
 
 1. ✅ Estrutura do Projeto
-2. ⏳ Infraestrutura (Migrations Master)
-3. ⏳ Multi-Tenant Configuration
-4. ⏳ Banco MASTER (Empresas, Planos, Usuários)
-5. ⏳ Banco TENANT (Schema base)
-6. ⏳ Autenticação (Sanctum + Login)
-... (continuar até Portal do Cliente)
+2. ✅ Infraestrutura (Migrations Master)
+3. ✅ Multi-Tenant Configuration
+4. ✅ Banco MASTER (Empresas, Planos, Usuários)
+5. ✅ Banco TENANT (Schema base)
+6. ✅ Autenticação (Sanctum + Login)
+7. ✅ Cadastro de Clientes, Veículos e Motoristas
+8. ✅ Cadastro de Produtos e Serviços (Etapa 6)
+9. ⏳ Controle de Estoque (Etapa 7)
+10. ⏳ Emissão e Gestão de Ordens de Serviço (Etapa 8)
+11. ⏳ Faturamento & Financeiro (Etapa 9)
+12. ⏳ Portal do Cliente (Etapa 10)
 
 ---
 
@@ -376,5 +385,5 @@ tests/
 
 ---
 
-**Status:** Etapa 1 iniciada
-**Última atualização:** 2026-07-06
+**Status:** Etapa 6 Concluída & Suíte de Testes 100% Operacional (190/190 Pest Tests PASS)
+**Última atualização:** 2026-07-15

@@ -39,7 +39,6 @@ return new class extends Migration
             $table->softDeletes();
 
             // Indexes
-            $table->index('is_active');
             $table->index('type');
         });
     }

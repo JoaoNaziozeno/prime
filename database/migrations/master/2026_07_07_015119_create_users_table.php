@@ -34,10 +34,12 @@ return new class extends Migration
             // Timestamps & Soft Delete
             $table->timestamps();
             $table->softDeletes();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullifyOnDelete();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullifyOnDelete();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullifyOnDelete();
 
             // Indexes
             $table->index('role');
-            $table->index('is_active');
             $table->index(['created_at', 'is_active']);
         });
     }

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name')->unique();
             $table->text('description')->nullable();
-            $table->string('slug')->unique()->index();
+            $table->string('slug')->unique();
             $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
             $table->softDeletes();

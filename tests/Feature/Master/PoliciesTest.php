@@ -7,7 +7,7 @@ use App\Models\Master\Subscription;
 use App\Models\Master\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+
 
 describe('Company Policy', function () {
 

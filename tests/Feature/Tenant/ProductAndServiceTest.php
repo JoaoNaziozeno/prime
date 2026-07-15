@@ -6,7 +6,7 @@ use App\Models\Tenant\Service;
 use App\Models\Tenant\ServiceCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+
 
 describe('Product Model', function () {
 
@@ -35,7 +35,7 @@ describe('Product Model', function () {
         $margin = $product->getMarginPercentage();
         $marginAmount = $product->getMarginAmount();
 
-        expect($margin)->toBeCloseTo(66.67, 0.1);
+        expect($margin)->toEqualWithDelta(66.67, 0.1);
         expect($marginAmount)->toBe(400.0);
     });
 
@@ -151,7 +151,7 @@ describe('Service Model', function () {
 
         $costPerHour = 400 / 4;
 
-        expect($service->base_price / $service->estimated_hours)->toBe($costPerHour);
+        expect($service->base_price / $service->estimated_hours)->toEqual($costPerHour);
     });
 
     test('scopes filter services correctly', function () {

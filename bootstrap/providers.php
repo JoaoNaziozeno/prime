@@ -8,4 +8,5 @@ return [
     AppServiceProvider::class,
     AuthServiceProvider::class,
     ErpServiceProvider::class,
+    App\Providers\TenancyServiceProvider::class,
 ];

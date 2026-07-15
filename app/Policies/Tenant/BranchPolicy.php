@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Policies;
+namespace App\Policies\Tenant;
 
 use App\Models\Master\User;
-use App\Models\Tenant\Customer;
+use App\Models\Tenant\Branch;
 
-class CustomerPolicy
+class BranchPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -18,7 +18,7 @@ class CustomerPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Customer $customer): bool
+    public function view(User $user, Branch $branch): bool
     {
         return true;
     }
@@ -28,30 +28,31 @@ class CustomerPolicy
      */
     public function create(User $user): bool
     {
-        return true;
+        return $user->isSuperAdmin() || $user->role === 'admin';
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Customer $customer): bool
+    public function update(User $user, Branch $branch): bool
     {
-        return true;
+        return $user->isSuperAdmin() || $user->role === 'admin';
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Customer $customer): bool
+    public function delete(User $user, Branch $branch): bool
     {
-        // Only admins and super admins can delete
-        return $user->isSuperAdmin() || $user->role === 'admin';
+        // Only allow delete if branch has no active vehicles
+        return ($user->isSuperAdmin() || $user->role === 'admin') 
+            && $branch->vehicles()->active()->count() === 0;
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Customer $customer): bool
+    public function restore(User $user, Branch $branch): bool
     {
         return $user->isSuperAdmin() || $user->role === 'admin';
     }
@@ -59,7 +60,7 @@ class CustomerPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Customer $customer): bool
+    public function forceDelete(User $user, Branch $branch): bool
     {
         return $user->isSuperAdmin();
     }

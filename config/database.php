@@ -44,6 +44,20 @@ return [
             'transaction_mode' => 'DEFERRED',
         ],
 
+        'tenant' => [
+            'driver' => 'sqlite',
+            'database' => database_path('tenant_testing.sqlite'),
+            'prefix' => '',
+            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+        ],
+
+        'sqlite_template' => [
+            'driver' => 'sqlite',
+            'database' => database_path('tenant_testing.sqlite'),
+            'prefix' => '',
+            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),

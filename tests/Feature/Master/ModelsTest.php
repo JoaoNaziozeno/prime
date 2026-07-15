@@ -8,7 +8,7 @@ use Database\Factories\Master\CompanyFactory;
 use Database\Factories\Master\PlanFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+
 
 describe('User Model', function () {
 

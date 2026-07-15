@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Policies;
+namespace App\Policies\Tenant;
 
 use App\Models\Master\User;
-use App\Models\Tenant\Vehicle;
+use App\Models\Tenant\Customer;
 
-class VehiclePolicy
+class CustomerPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -18,7 +18,7 @@ class VehiclePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Vehicle $vehicle): bool
+    public function view(User $user, Customer $customer): bool
     {
         return true;
     }
@@ -28,29 +28,30 @@ class VehiclePolicy
      */
     public function create(User $user): bool
     {
-        return $user->isSuperAdmin() || $user->role === 'admin';
+        return true;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Vehicle $vehicle): bool
+    public function update(User $user, Customer $customer): bool
     {
-        return $user->isSuperAdmin() || $user->role === 'admin';
+        return true;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Vehicle $vehicle): bool
+    public function delete(User $user, Customer $customer): bool
     {
+        // Only admins and super admins can delete
         return $user->isSuperAdmin() || $user->role === 'admin';
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Vehicle $vehicle): bool
+    public function restore(User $user, Customer $customer): bool
     {
         return $user->isSuperAdmin() || $user->role === 'admin';
     }
@@ -58,16 +59,8 @@ class VehiclePolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Vehicle $vehicle): bool
+    public function forceDelete(User $user, Customer $customer): bool
     {
         return $user->isSuperAdmin();
-    }
-
-    /**
-     * Determine whether the user can send to maintenance.
-     */
-    public function maintenance(User $user, Vehicle $vehicle): bool
-    {
-        return $user->isSuperAdmin() || $user->role === 'admin';
     }
 }

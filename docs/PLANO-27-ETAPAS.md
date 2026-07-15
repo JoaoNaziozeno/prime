@@ -19,51 +19,15 @@
 - OrderOfService, OrderItem models com state machines
 - Services, Controllers, API routes, DTOs, Policies, Tests
 
+### Etapa 6: Products & Services (Produtos e Serviços)
+- Catálogo de produtos (peças) e serviços (mão de obra), categorias e precificação por filial
+
+### Etapa 7: Inventory Management (Gestão de Estoque)
+- Controle de movimentação (entradas/saídas/ajustes), localizações físicas e logs de inventário
+
 ---
 
 ## 🔄 ETAPAS EM ANDAMENTO / PRÓXIMAS
-
-### Etapa 6: Products & Services (Produtos e Serviços)
-**Objetivo:** Catálogo de produtos (peças) e serviços (mão de obra)
-
-**Componentes:**
-- `Product` model (peças/componentes)
-  - Attributes: name, sku, description, category_id, unit_price, stock_quantity
-  - Relationships: hasMany(ProductImage), hasMany(InventoryLog), belongsTo(ProductCategory)
-  - Scopes: active, lowStock, outOfStock, byCategory
-  - Methods: getMarginPercentage(), isLowStock(), canSell()
-  
-- `Service` model (serviços/mão de obra)
-  - Attributes: name, code, description, base_price, category_id, estimated_hours
-  - Relationships: hasMany(ServicePrice), belongsTo(ServiceCategory)
-  - Scopes: active, byCategory
-  - Methods: getPrice(branch_id), getPriceHistory()
-
-- `ProductCategory` model
-- `ServiceCategory` model
-- DTOs para criação/atualização
-- Services para CRUD
-- Controllers e rotas API
-- Policies de autorização
-- Factories e seeders
-- Feature tests
-
----
-
-### Etapa 7: Inventory Management (Gestão de Estoque)
-**Objetivo:** Controle de estoque de peças
-
-**Componentes:**
-- `InventoryMovement` model (entrada/saída)
-- `InventoryLog` model (histórico)
-- `WarehouseLocation` model (localização física)
-- Scopes: inbound, outbound, adjustment, transfer
-- Services para movimentação
-- Controllers e rotas
-- Relatórios de estoque
-- Alertas de estoque baixo
-
----
 
 ### Etapa 8: Cost Allocation (Alocação de Custos)
 **Objetivo:** Relacionar produtos e serviços com ordens
@@ -312,17 +276,17 @@
 ## 📊 Resumo do Progresso
 
 ```
-✅ Etapas 1-5:  Infraestrutura base + Ordens de Serviço
-⏳ Etapas 6-10: Produtos, Estoque, Financeiro, Pagamentos
+✅ Etapas 1-7:  Infraestrutura, Ordens de Serviço, Produtos e Estoque
+⏳ Etapas 8-10: Custos, Financeiro, Pagamentos
 🔮 Etapas 11-27: Relatórios, Agendamento, Integrações, Mobile
 ```
 
 **Total de etapas:** 27
-**Concluídas:** 5
-**Restantes:** 22
+**Concluídas:** 7
+**Restantes:** 20
 
 ---
 
-**Próxima Etapa:** 6 - Products & Services
-**Tempo estimado:** 3-4 horas
+**Próxima Etapa:** 8 - Cost Allocation (Alocação de Custos)
+**Tempo estimado:** 2 horas
 **Status:** Pronto para iniciar

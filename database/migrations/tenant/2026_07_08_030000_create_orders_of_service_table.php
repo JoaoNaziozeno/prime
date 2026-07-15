@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('orders_of_service', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('customer_id')->index();
-            $table->uuid('vehicle_id')->nullable()->index();
-            $table->uuid('branch_id')->index();
+            $table->unsignedBigInteger('customer_id')->index();
+            $table->unsignedBigInteger('vehicle_id')->nullable()->index();
+            $table->unsignedBigInteger('branch_id')->index();
             $table->uuid('created_by')->index();
             $table->uuid('updated_by')->nullable();
 
@@ -45,7 +45,7 @@ return new class extends Migration
             $table->decimal('approved_amount', 12, 2)->nullable();
 
             // Additional tracking
-            $table->string('reference_number')->unique()->index(); // Número OS para referência
+            $table->string('reference_number')->unique(); // Número OS para referência
             $table->json('metadata')->nullable();
 
             // Audit

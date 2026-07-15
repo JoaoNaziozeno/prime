@@ -12,7 +12,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('category_id')->index();
             $table->string('name')->index();
-            $table->string('sku')->unique()->index();
+            $table->string('sku')->unique();
             $table->text('description')->nullable();
             $table->decimal('unit_price', 12, 2);
             $table->decimal('cost_price', 12, 2)->nullable();

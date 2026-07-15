@@ -17,7 +17,7 @@ class EnsureTenantIsActive
     public function handle(Request $request, Closure $next)
     {
         try {
-            $tenant = tenancy()->tenant();
+            $tenant = tenant();
 
             if (!$tenant || $tenant->status !== 'active') {
                 return response()->json(['error' => 'Tenant is not active'], 403);

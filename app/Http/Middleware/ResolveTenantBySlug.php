@@ -52,7 +52,11 @@ class ResolveTenantBySlug
         $centralDomains = config('tenancy.central_domains', []);
 
         foreach ($centralDomains as $domain) {
-            if (str_ends_with($host, $domain)) {
+            if ($host === $domain) {
+                continue;
+            }
+
+            if (str_ends_with($host, '.' . $domain)) {
                 $subdomain = str_replace('.' . $domain, '', $host);
 
                 // Only return if subdomain is not a central domain prefix

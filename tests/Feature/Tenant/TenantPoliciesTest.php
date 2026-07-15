@@ -7,7 +7,7 @@ use App\Models\Tenant\Driver;
 use App\Models\Tenant\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+
 
 describe('Customer Policy', function () {
 

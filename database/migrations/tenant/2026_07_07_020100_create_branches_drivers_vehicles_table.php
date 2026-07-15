@@ -55,7 +55,7 @@ return new class extends Migration
         // Vehicles/Veículos
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
-            $table->string('plate')->unique()->index();
+            $table->string('plate')->unique();
             $table->string('model')->index();
             $table->string('brand')->index();
             $table->year('year');

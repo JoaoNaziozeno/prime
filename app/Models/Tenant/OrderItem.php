@@ -12,6 +12,8 @@ class OrderItem extends Model
 {
     use HasUuids, HasFactory, SoftDeletes;
 
+    protected $connection = 'tenant';
+
     protected $table = 'order_items';
 
     protected $fillable = [

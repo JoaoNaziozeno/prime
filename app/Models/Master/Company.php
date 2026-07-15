@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\HasAudit;
 
@@ -77,9 +78,9 @@ class Company extends Model
     /**
      * Assinatura ativa
      */
-    public function activeSubscription(): HasMany
+    public function activeSubscription(): HasOne
     {
-        return $this->hasMany(Subscription::class)
+        return $this->hasOne(Subscription::class)
             ->where('status', 'active');
     }
 
@@ -94,9 +95,9 @@ class Company extends Model
     /**
      * Tenant ativo (geralmente há apenas um)
      */
-    public function activeTenant(): HasMany
+    public function activeTenant(): HasOne
     {
-        return $this->hasMany(Tenant::class)
+        return $this->hasOne(Tenant::class)
             ->where('status', 'active');
     }
 

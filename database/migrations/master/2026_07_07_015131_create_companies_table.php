@@ -45,9 +45,18 @@ return new class extends Migration
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullifyOnDelete();
 
             // Indexes
-            $table->index('status');
             $table->index('cnpj');
             $table->index(['created_at', 'status']);
+        });
+
+        Schema::create('company_user', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->string('role')->default('user');
+            $table->timestamps();
+
+            $table->unique(['company_id', 'user_id']);
         });
     }
 
@@ -56,6 +65,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('company_user');
         Schema::dropIfExists('companies');
     }
 };

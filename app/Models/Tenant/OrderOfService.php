@@ -13,6 +13,8 @@ class OrderOfService extends Model
 {
     use HasUuids, HasFactory, SoftDeletes;
 
+    protected $connection = 'tenant';
+
     protected $table = 'orders_of_service';
 
     protected $fillable = [

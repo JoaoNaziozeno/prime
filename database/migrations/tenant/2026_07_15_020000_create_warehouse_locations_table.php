@@ -8,26 +8,25 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('services', function (Blueprint $table) {
+        Schema::create('warehouse_locations', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('category_id')->index();
             $table->string('name')->index();
             $table->string('code')->unique();
             $table->text('description')->nullable();
-            $table->decimal('base_price', 12, 2);
-            $table->decimal('estimated_hours', 6, 2)->nullable();
-            $table->boolean('is_active')->default(true)->index();
-            $table->json('metadata')->nullable();
+            
+            // Audit
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->unsignedBigInteger('deleted_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('category_id')->references('id')->on('service_categories')->onDelete('cascade');
             $table->index('created_at');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('services');
+        Schema::dropIfExists('warehouse_locations');
     }
 };

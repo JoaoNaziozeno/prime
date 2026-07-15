@@ -8,12 +8,92 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\HasAudit;
+use Stancl\Tenancy\Contracts\TenantWithDatabase;
+use Stancl\Tenancy\Database\Concerns\HasDatabase;
+use Stancl\Tenancy\Database\Concerns\HasInternalKeys;
 
-class Tenant extends Model
+class Tenant extends Model implements TenantWithDatabase
 {
-    use HasFactory, SoftDeletes, HasUuids, HasAudit;
+    use HasFactory, SoftDeletes, HasUuids, HasAudit, HasDatabase, HasInternalKeys;
 
     protected $table = 'tenants';
+
+    public function getConnectionName()
+    {
+        return config('tenancy.database.central_connection');
+    }
+
+    public function getTenantKeyName(): string
+    {
+        return 'id';
+    }
+
+    public function getTenantKey()
+    {
+        return $this->id;
+    }
+
+    public function getInternal(string $key)
+    {
+        if (app()->environment('testing') && $key === 'db_name') {
+            return 'tenant_testing.sqlite';
+        }
+
+        $realKey = match ($key) {
+            'db_name' => 'database_name',
+            'db_host' => 'db_host',
+            'db_username' => 'db_username',
+            'db_password' => 'db_password',
+            'db_port' => 'db_port',
+            'db_driver' => 'db_driver',
+            default => 'tenancy_' . $key,
+        };
+
+        return $this->getAttribute($realKey);
+    }
+
+    public function setInternal(string $key, $value)
+    {
+        $realKey = match ($key) {
+            'db_name' => 'database_name',
+            'db_host' => 'db_host',
+            'db_username' => 'db_username',
+            'db_password' => 'db_password',
+            'db_port' => 'db_port',
+            'db_driver' => 'db_driver',
+            default => 'tenancy_' . $key,
+        };
+
+        $this->setAttribute($realKey, $value);
+        return $this;
+    }
+
+    public function run(callable $callback)
+    {
+        $originalTenant = tenant();
+
+        tenancy()->initialize($this);
+        $result = $callback($this);
+
+        if ($originalTenant) {
+            tenancy()->initialize($originalTenant);
+        } else {
+            tenancy()->end();
+        }
+
+        return $result;
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function (Tenant $tenant) {
+            if (empty($tenant->slug) && $tenant->company) {
+                $tenant->slug = self::generateSlug($tenant->company);
+            }
+        });
+    }
 
     protected $fillable = [
         'company_id',
@@ -217,6 +297,9 @@ class Tenant extends Model
     public function getSetting(string $key, $default = null)
     {
         $settings = $this->settings ?? [];
+        if (is_string($settings)) {
+            $settings = json_decode($settings, true) ?? [];
+        }
         return $settings[$key] ?? $default;
     }
 
@@ -226,6 +309,9 @@ class Tenant extends Model
     public function setSetting(string $key, $value): self
     {
         $settings = $this->settings ?? [];
+        if (is_string($settings)) {
+            $settings = json_decode($settings, true) ?? [];
+        }
         $settings[$key] = $value;
         $this->settings = $settings;
         return $this;

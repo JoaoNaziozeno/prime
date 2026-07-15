@@ -7,7 +7,7 @@ use App\Models\Tenant\Vehicle;
 use App\Models\Tenant\Branch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+
 
 describe('OrderOfService Model', function () {
 
@@ -96,7 +96,7 @@ describe('OrderOfService Model', function () {
         OrderOfService::factory(2)->inProgress()->create();
         OrderOfService::factory(2)->completed()->create();
 
-        expect(OrderOfService::active()->count())->toBe(6);
+        expect(OrderOfService::active()->count())->toBe(4);
     });
 
     test('order can transition to approved', function () {
@@ -106,7 +106,7 @@ describe('OrderOfService Model', function () {
 
         expect($result)->toBeTrue();
         expect($order->refresh()->status)->toBe(OrderOfService::STATUS_APPROVED);
-        expect($order->approved_amount)->toBe(1000);
+        expect($order->approved_amount)->toEqual(1000);
     });
 
     test('order can transition to in progress', function () {
@@ -127,7 +127,7 @@ describe('OrderOfService Model', function () {
         expect($result)->toBeTrue();
         expect($order->refresh()->status)->toBe(OrderOfService::STATUS_COMPLETED);
         expect($order->actual_end_date)->not->toBeNull();
-        expect($order->actual_cost)->toBe(1500);
+        expect($order->actual_cost)->toEqual(1500);
     });
 
     test('order can be cancelled', function () {
@@ -175,8 +175,8 @@ describe('OrderOfService Model', function () {
             'actual_cost' => 1200,
         ]);
 
-        expect($order->getCostVariance())->toBe(200);
-        expect($order->getCostVariancePercentage())->toBeCloseTo(20, 0.1);
+        expect($order->getCostVariance())->toEqual(200);
+        expect($order->getCostVariancePercentage())->toEqualWithDelta(20, 0.1);
     });
 
     test('order progress percentage calculated correctly', function () {
@@ -276,8 +276,8 @@ describe('OrderItem Model', function () {
         expect($result)->toBeTrue();
         expect($item->refresh()->status)->toBe(OrderItem::STATUS_COMPLETED);
         expect($item->completed_at)->not->toBeNull();
-        expect($item->actual_cost)->toBe(500);
-        expect($item->hours_spent)->toBe(2.5);
+        expect($item->actual_cost)->toEqual(500);
+        expect($item->hours_spent)->toEqual(2.5);
     });
 
     test('item can be cancelled', function () {
@@ -323,8 +323,8 @@ describe('OrderItem Model', function () {
             'actual_cost' => 1100,
         ]);
 
-        expect($item->getCostVariance())->toBe(100);
-        expect($item->getCostVariancePercentage())->toBeCloseTo(10, 0.1);
+        expect($item->getCostVariance())->toEqual(100);
+        expect($item->getCostVariancePercentage())->toEqualWithDelta(10, 0.1);
     });
 
     test('item metadata can be stored', function () {

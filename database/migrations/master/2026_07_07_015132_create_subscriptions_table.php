@@ -45,7 +45,6 @@ return new class extends Migration
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullifyOnDelete();
 
             // Indexes
-            $table->index('status');
             $table->index('company_id');
             $table->index('renews_at');
             $table->index(['status', 'renews_at']);

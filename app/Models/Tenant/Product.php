@@ -18,6 +18,7 @@ class Product extends Model
 
     protected $fillable = [
         'category_id',
+        'warehouse_location_id',
         'name',
         'sku',
         'description',
@@ -45,6 +46,11 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(ProductCategory::class, 'category_id');
+    }
+
+    public function warehouseLocation(): BelongsTo
+    {
+        return $this->belongsTo(WarehouseLocation::class, 'warehouse_location_id');
     }
 
     public function inventoryLogs(): HasMany

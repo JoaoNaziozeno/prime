@@ -13,7 +13,7 @@ class CompanyPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isSuperAdmin() || $user->hasRole('admin');
+        return $user->isAdmin();
     }
 
     /**
@@ -40,7 +40,7 @@ class CompanyPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isSuperAdmin() || $user->hasRole('admin');
+        return $user->isAdmin();
     }
 
     /**

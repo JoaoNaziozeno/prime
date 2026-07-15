@@ -5,7 +5,7 @@ use App\Models\Master\Tenant;
 use App\Models\Master\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+
 
 describe('Tenant Resolution', function () {
 
@@ -20,8 +20,8 @@ describe('Tenant Resolution', function () {
         // Simulate initializing tenancy
         tenancy()->initialize($tenant);
 
-        expect(tenancy()->tenant()->id)->toBe($tenant->id);
-        expect(tenancy()->tenant()->slug)->toBe('test-company');
+        expect(tenancy()->tenant->id)->toBe($tenant->id);
+        expect(tenancy()->tenant->slug)->toBe('test-company');
     });
 
     test('inactive tenant cannot be accessed', function () {
@@ -202,7 +202,8 @@ describe('Tenant Audit', function () {
             'created_by' => $user->id,
         ]);
 
-        $tenant->update(['updated_by' => $user->id]);
+        $tenant->updated_by = $user->id;
+        $tenant->save();
 
         expect($tenant->refresh()->updated_by)->toBe($user->id);
     });

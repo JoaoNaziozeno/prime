@@ -17,6 +17,8 @@ use App\Models\Tenant\Product;
 use App\Models\Tenant\ProductCategory;
 use App\Models\Tenant\Service;
 use App\Models\Tenant\ServiceCategory;
+use App\Models\Tenant\WarehouseLocation;
+use App\Models\Tenant\InventoryLog;
 use App\Policies\UserPolicy;
 use App\Policies\CompanyPolicy;
 use App\Policies\PlanPolicy;
@@ -32,6 +34,8 @@ use App\Policies\Tenant\ProductPolicy;
 use App\Policies\Tenant\ProductCategoryPolicy;
 use App\Policies\Tenant\ServicePolicy;
 use App\Policies\Tenant\ServiceCategoryPolicy;
+use App\Policies\Tenant\WarehouseLocationPolicy;
+use App\Policies\Tenant\InventoryLogPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -60,6 +64,8 @@ class AuthServiceProvider extends ServiceProvider
         ProductCategory::class => ProductCategoryPolicy::class,
         Service::class => ServicePolicy::class,
         ServiceCategory::class => ServiceCategoryPolicy::class,
+        WarehouseLocation::class => WarehouseLocationPolicy::class,
+        InventoryLog::class => InventoryLogPolicy::class,
     ];
 
     /**

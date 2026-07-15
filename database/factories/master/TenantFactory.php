@@ -27,10 +27,10 @@ class TenantFactory extends Factory
             'db_driver' => 'mysql',
             'status' => 'setup',
             'activated_at' => null,
-            'settings' => json_encode([
+            'settings' => [
                 'language' => 'pt_BR',
                 'timezone' => 'America/Sao_Paulo',
-            ]),
+            ],
             'notes' => $this->faker->sentence(),
             'created_by' => User::factory(),
         ];

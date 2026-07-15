@@ -41,10 +41,12 @@ return new class extends Migration
             // Timestamps
             $table->timestamps();
             $table->softDeletes();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullifyOnDelete();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullifyOnDelete();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullifyOnDelete();
 
             // Indexes
             $table->index('company_id');
-            $table->index('status');
             $table->index('slug');
         });
     }

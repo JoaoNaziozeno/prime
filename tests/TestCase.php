@@ -3,9 +3,11 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 abstract class TestCase extends BaseTestCase
 {
+    use RefreshDatabase;
     protected function migrateFreshUsing()
     {
         return [
@@ -16,5 +18,24 @@ abstract class TestCase extends BaseTestCase
             ],
             '--realpath' => true,
         ];
+    }
+
+    protected function connectionsToTransact()
+    {
+        return ['sqlite', 'tenant'];
+    }
+
+    protected function beforeRefreshingDatabase()
+    {
+        $dbPath = database_path('tenant_testing.sqlite');
+        if (!file_exists($dbPath)) {
+            touch($dbPath);
+        }
+
+        $this->artisan('migrate:fresh', [
+            '--database' => 'tenant',
+            '--path' => 'database/migrations/tenant',
+            '--realpath' => false,
+        ]);
     }
 }

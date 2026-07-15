@@ -8,7 +8,7 @@ use Database\Factories\Master\SubscriptionFactory;
 use Database\Factories\Master\TenantFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+
 
 describe('Subscription Model', function () {
 
@@ -73,8 +73,8 @@ describe('Subscription Model', function () {
         $oldDate = $subscription->renews_at;
         $subscription->renew();
 
-        expect($subscription->renews_at)->not->equals($oldDate)
-            ->and($subscription->renews_at->diffInDays($oldDate))->toBe(30);
+        expect($subscription->renews_at)->not->toEqual($oldDate)
+            ->and(abs($subscription->renews_at->diffInDays($oldDate)))->toEqual(30);
     });
 
     test('pode criar assinatura com boleto', function () {

@@ -10,6 +10,8 @@ use App\Http\Controllers\API\Tenant\OrderItemController;
 use App\Http\Controllers\API\Tenant\ProductController;
 use App\Http\Controllers\API\Tenant\ServiceController;
 use App\Http\Controllers\API\Tenant\CategoryController;
+use App\Http\Controllers\API\Tenant\WarehouseLocationController;
+use App\Http\Controllers\API\Tenant\InventoryLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,8 +34,8 @@ Route::middleware([
     ResolveTenantBySlug::class,
     EnsureTenantIsActive::class,
 ])->group(function () {
-    Route::get('/', function () {
-        $tenant = tenancy()->tenant();
+    Route::get('/tenant-welcome', function () {
+        $tenant = tenant();
         return response()->json([
             'message' => 'Welcome to tenant application',
             'tenant_id' => $tenant->id,
@@ -94,6 +96,12 @@ Route::prefix('api')->middleware([
     Route::post('/service-categories', [CategoryController::class, 'storeServiceCategory']);
     Route::put('/service-categories/{category}', [CategoryController::class, 'updateServiceCategory']);
     Route::delete('/service-categories/{category}', [CategoryController::class, 'destroyServiceCategory']);
+
+    // Warehouse Locations & Inventory Logs
+    Route::apiResource('warehouse-locations', WarehouseLocationController::class);
+    Route::get('/inventory-logs', [InventoryLogController::class, 'index']);
+    Route::get('/inventory-logs/{inventoryLog}', [InventoryLogController::class, 'show']);
+    Route::post('/inventory-logs', [InventoryLogController::class, 'store']);
 
     // Status endpoint
     Route::get('/status', function () {

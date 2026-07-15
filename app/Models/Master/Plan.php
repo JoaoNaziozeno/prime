@@ -30,7 +30,7 @@ class Plan extends Model
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
+        'price' => 'float',
         'is_active' => 'boolean',
         'has_api_access' => 'boolean',
         'has_support' => 'boolean',
@@ -135,6 +135,9 @@ class Plan extends Model
      */
     public function getFeatures(): array
     {
+        if (is_string($this->features)) {
+            return json_decode($this->features, true) ?? [];
+        }
         return $this->features ?? [];
     }
 

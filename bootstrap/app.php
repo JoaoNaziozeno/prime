@@ -23,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'App\Http\Middleware\ResolveTenantBySlug',
             'App\Http\Middleware\EnsureTenantIsActive',
             Stancl\Tenancy\Middleware\InitializeTenancy::class,
+            'throttle:60,1',
+            \App\Http\Middleware\SecurityHeadersMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

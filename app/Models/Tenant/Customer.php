@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Master\User;
+use Laravel\Sanctum\HasApiTokens;
+use App\Traits\Tenant\Auditable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Auth\Authenticatable;
 
-class Customer extends Model
+class Customer extends Model implements AuthenticatableContract
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Auditable, HasApiTokens, Authenticatable;
 
     protected $connection = 'tenant';
 
@@ -40,6 +44,7 @@ class Customer extends Model
         'activated_at' => 'datetime',
         'suspended_at' => 'datetime',
         'metadata' => 'json',
+        'notes' => 'encrypted',
     ];
 
     /**
@@ -226,5 +231,10 @@ class Customer extends Model
         data_set($metadata, $key, $value);
         $this->metadata = $metadata;
         $this->save();
+    }
+
+    public function loginTokens(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CustomerLoginToken::class);
     }
 }

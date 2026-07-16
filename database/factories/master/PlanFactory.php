@@ -12,7 +12,7 @@ class PlanFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->word() . ' Plan',
+            'name' => $this->faker->unique()->word() . ' Plan ' . uniqid(),
             'description' => $this->faker->sentence(),
             'type' => 'monthly',
             'price' => $this->faker->randomFloat(2, 99, 999),

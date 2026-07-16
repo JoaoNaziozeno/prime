@@ -11,10 +11,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Traits\HasAudit;
+use App\Traits\Tenant\HasTenantRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, SoftDeletes, HasAudit, HasApiTokens, Notifiable;
+    use HasFactory, SoftDeletes, HasAudit, HasApiTokens, Notifiable, HasTenantRoles;
 
     protected $table = 'users';
 
@@ -28,6 +29,9 @@ class User extends Authenticatable
         'email_verified_at',
         'last_login_at',
         'last_login_ip',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
     ];
 
     protected $hidden = [
@@ -161,5 +165,33 @@ class User extends Authenticatable
             'last_login_at' => now(),
             'last_login_ip' => $ip,
         ]);
+    }
+
+    /**
+     * Override notifications relationship to support Tenant Database Notifications
+     */
+    public function notifications()
+    {
+        $model = function_exists('tenant') && tenant()
+            ? \App\Models\Tenant\TenantDatabaseNotification::class
+            : \Illuminate\Notifications\DatabaseNotification::class;
+
+        return $this->morphMany($model, 'notifiable')->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Route notifications for the SMS channel.
+     */
+    public function routeNotificationForSms()
+    {
+        return $this->phone;
+    }
+
+    /**
+     * Ensure the model always queries the central connection name.
+     */
+    public function getConnectionName()
+    {
+        return config('tenancy.database.central_connection');
     }
 }

@@ -346,18 +346,25 @@ tests/
 
 ## 11. Próximos Passos
 
-1. ✅ Estrutura do Projeto
-2. ✅ Infraestrutura (Migrations Master)
-3. ✅ Multi-Tenant Configuration
-4. ✅ Banco MASTER (Empresas, Planos, Usuários)
-5. ✅ Banco TENANT (Schema base)
-6. ✅ Autenticação (Sanctum + Login)
-7. ✅ Cadastro de Clientes, Veículos e Motoristas
-8. ✅ Cadastro de Produtos e Serviços (Etapa 6)
-9. ⏳ Controle de Estoque (Etapa 7)
-10. ⏳ Emissão e Gestão de Ordens de Serviço (Etapa 8)
-11. ⏳ Faturamento & Financeiro (Etapa 9)
-12. ⏳ Portal do Cliente (Etapa 10)
+1. ✅ Estrutura do Projeto (Etapa 1)
+2. ✅ Infraestrutura e Banco MASTER (Etapa 2)
+3. ✅ Multi-Tenant Configuration (Etapa 3)
+4. ✅ Cadastro de Clientes, Veículos e Motoristas (Etapa 4)
+5. ✅ Emissão e Gestão de Ordens de Serviço (Etapa 5)
+6. ✅ Cadastro de Produtos e Serviços (Etapa 6)
+7. ✅ Controle e Movimentação de Estoque (Etapa 7)
+8. ✅ Alocação de Custos em Ordens de Serviço (Etapa 8)
+9. ✅ Faturamento e Gestão Financeira (Etapa 9)
+10. ✅ Processamento de Pagamentos (Etapa 10)
+11. ✅ Relatórios e Analytics (Etapa 11)
+12. ✅ Agendamentos e Calendário (Etapa 12)
+13. ✅ Gestão de Documentos (Etapa 13)
+14. ✅ Comunicação e Notificações (Etapa 14)
+15. ✅ Gerenciamento de Usuários, RBAC & 2FA (Etapa 15)
+16. ✅ Settings e Configurações (Etapa 16)
+17. ✅ CRM e Funil de Vendas (Etapa 17)
+18. ✅ Integrações - Gateways de SMS, E-mail, S3 e Analytics (Etapa 18)
+19. ⏳ Estoque Avançado (Etapa 19)
 
 ---
 
@@ -385,5 +392,5 @@ tests/
 
 ---
 
-**Status:** Etapa 6 Concluída & Suíte de Testes 100% Operacional (190/190 Pest Tests PASS)
-**Última atualização:** 2026-07-15
+**Status:** Etapa 18 Concluída & Suíte de Testes 100% Operacional (283/283 Pest Tests PASS)
+**Última atualização:** 2026-07-16

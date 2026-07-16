@@ -21,6 +21,8 @@ class Product extends Model
         'warehouse_location_id',
         'name',
         'sku',
+        'is_serialized',
+        'has_batches',
         'description',
         'unit_price',
         'cost_price',
@@ -36,6 +38,8 @@ class Product extends Model
         'unit_price' => 'decimal:2',
         'cost_price' => 'decimal:2',
         'stock_quantity' => 'integer',
+        'is_serialized' => 'boolean',
+        'has_batches' => 'boolean',
         'is_active' => 'boolean',
         'metadata' => 'array',
     ];
@@ -56,6 +60,16 @@ class Product extends Model
     public function inventoryLogs(): HasMany
     {
         return $this->hasMany(InventoryLog::class, 'product_id');
+    }
+
+    public function serials(): HasMany
+    {
+        return $this->hasMany(ProductSerial::class);
+    }
+
+    public function batches(): HasMany
+    {
+        return $this->hasMany(ProductBatch::class);
     }
 
     /**

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Tenant\QaDefect;
 
 class OrderOfService extends Model
 {
@@ -82,6 +83,67 @@ class OrderOfService extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function productLines(): HasMany
+    {
+        return $this->hasMany(OrderProductLine::class, 'order_of_service_id');
+    }
+
+    public function serviceLines(): HasMany
+    {
+        return $this->hasMany(OrderServiceLine::class, 'order_of_service_id');
+    }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(OrderMessage::class, 'order_of_service_id');
+    }
+
+    public function qaInspections(): HasMany
+    {
+        return $this->hasMany(QaInspection::class, 'order_of_service_id');
+    }
+
+    public function feedback(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(OrderFeedback::class, 'order_of_service_id');
+    }
+
+    public function warranties(): HasMany
+    {
+        return $this->hasMany(Warranty::class, 'order_of_service_id');
+    }
+
+    /**
+     * Getters for cost allocation totals and margins
+     */
+    public function getTotalBilledPriceAttribute(): float
+    {
+        $productsSum = (float) $this->productLines()->sum('total_price');
+        $servicesSum = (float) $this->serviceLines()->sum('total_price');
+        return $productsSum + $servicesSum;
+    }
+
+    public function getTotalCostPriceAttribute(): float
+    {
+        $productsSum = (float) $this->productLines()->sum('total_cost');
+        $servicesSum = (float) $this->serviceLines()->sum('total_cost');
+        return $productsSum + $servicesSum;
+    }
+
+    public function getMarginAmountAttribute(): float
+    {
+        return $this->total_billed_price - $this->total_cost_price;
+    }
+
+    public function getMarginPercentageAttribute(): float
+    {
+        $billed = $this->total_billed_price;
+        if ($billed == 0) {
+            return 0.0;
+        }
+        return ($this->margin_amount / $billed) * 100;
     }
 
     // Scopes
@@ -307,7 +369,19 @@ class OrderOfService extends Model
 
     public function canComplete(): bool
     {
-        return $this->isInProgress();
+        if (!$this->isInProgress()) {
+            return false;
+        }
+
+        $hasUnresolvedDefects = QaDefect::whereHas('inspection', function ($query) {
+            $query->where('order_of_service_id', $this->id);
+        })->whereIn('status', [QaDefect::STATUS_OPEN, QaDefect::STATUS_IN_REWORK])->exists();
+
+        if ($hasUnresolvedDefects) {
+            return false;
+        }
+
+        return true;
     }
 
     public function canCancel(): bool

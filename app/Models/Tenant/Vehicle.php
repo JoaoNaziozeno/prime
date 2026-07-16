@@ -25,6 +25,7 @@ class Vehicle extends Model
         'renavam',
         'license_expiration',
         'status',
+        'odometer',
         'branch_id',
     ];
 
@@ -32,6 +33,7 @@ class Vehicle extends Model
         'year' => 'integer',
         'capacity_tons' => 'decimal:2',
         'license_expiration' => 'date',
+        'odometer' => 'integer',
     ];
 
     /**
@@ -217,6 +219,16 @@ class Vehicle extends Model
     public function canOperate(): bool
     {
         return $this->isActive() && (!$this->license_expiration || $this->license_expiration >= now()->toDateString());
+    }
+
+    public function maintenanceLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(MaintenanceLog::class);
+    }
+
+    public function preventiveRuleStatuses(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(VehiclePreventiveRuleStatus::class);
     }
 
     /**

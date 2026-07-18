@@ -18,6 +18,17 @@ class Tenant extends Model implements TenantWithDatabase
 
     protected $table = 'tenants';
 
+    protected $dispatchesEvents = [
+        'saving' => \Stancl\Tenancy\Events\SavingTenant::class,
+        'saved' => \Stancl\Tenancy\Events\TenantSaved::class,
+        'creating' => \Stancl\Tenancy\Events\CreatingTenant::class,
+        'created' => \Stancl\Tenancy\Events\TenantCreated::class,
+        'updating' => \Stancl\Tenancy\Events\UpdatingTenant::class,
+        'updated' => \Stancl\Tenancy\Events\TenantUpdated::class,
+        'deleting' => \Stancl\Tenancy\Events\DeletingTenant::class,
+        'deleted' => \Stancl\Tenancy\Events\TenantDeleted::class,
+    ];
+
     public function getConnectionName()
     {
         return config('tenancy.database.central_connection');

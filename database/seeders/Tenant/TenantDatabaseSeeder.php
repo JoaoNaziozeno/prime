@@ -41,5 +41,10 @@ class TenantDatabaseSeeder extends Seeder
         Vehicle::factory(1)->inactive()->create();
         Vehicle::factory(1)->maintenance()->create();
         Vehicle::factory(1)->withExpiredLicense()->create();
+
+        $this->call([
+            ProductAndServiceSeeder::class,
+            OrderOfServiceSeeder::class,
+        ]);
     }
 }

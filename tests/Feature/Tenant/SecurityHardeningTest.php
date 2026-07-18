@@ -11,6 +11,7 @@ use App\Models\Tenant\Invoice;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Laravel\Sanctum\Sanctum;
 
 describe('Security Hardening Feature Tests', function () {
 
@@ -61,8 +62,8 @@ describe('Security Hardening Feature Tests', function () {
     });
 
     test('OWASP security headers are present in all tenant API responses', function () {
-        $response = $this->actingAs($this->user)
-            ->getJson('http://secure-tenant.prime-erp.local/api/settings');
+        Sanctum::actingAs($this->user);
+        $response = $this->getJson('http://secure-tenant.prime-erp.local/api/settings');
 
         $response->assertStatus(200);
         $response->assertHeader('X-Frame-Options', 'DENY');
@@ -77,6 +78,8 @@ describe('Security Hardening Feature Tests', function () {
             $response = $this->postJson('http://secure-tenant.prime-erp.local/api/customer/login', [
                 'email' => 'some@customer.com',
             ]);
+
+            dump($i, $response->status(), $response->headers->get('X-RateLimit-Remaining'));
 
             if ($i === 6) {
                 // The 6th request must trigger rate limit blocker

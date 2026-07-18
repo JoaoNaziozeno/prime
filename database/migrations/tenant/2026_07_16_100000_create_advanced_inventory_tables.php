@@ -95,7 +95,7 @@ return new class extends Migration
 
         // 7. Alter order_product_lines table
         Schema::table('order_product_lines', function (Blueprint $table) {
-            $table->uuid('product_batch_id')->nullable()->index()->after('warehouse_location_id');
+            $table->uuid('product_batch_id')->nullable()->index()->after('product_id');
             $table->foreign('product_batch_id')->references('id')->on('product_batches')->onDelete('set null');
         });
 

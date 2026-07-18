@@ -84,7 +84,9 @@ Route::middleware([
  */
 Route::prefix('api')->middleware([
     'api',
-    ResolveTenantBySlug::class,
+    \App\Http\Middleware\InitializeTenancyByHeader::class, // <-- Adicionado aqui!
+    'auth:sanctum',
+    \App\Http\Middleware\InitializeTenancyByAuth::class,
     EnsureTenantIsActive::class,
     ConfigureTenantIntegrations::class,
     'throttle:60,1',
@@ -258,10 +260,6 @@ Route::prefix('api')->middleware([
     Route::post('/settings', [SettingController::class, 'update']);
     Route::post('/settings/logo', [SettingController::class, 'uploadLogo']);
     Route::get('/settings/logo/view', [SettingController::class, 'getLogo']);
-
-    // Customer Portal Public Routes
-    Route::post('/customer/login', [CustomerAuthController::class, 'login'])->middleware('throttle:5,1,login');
-    Route::post('/customer/authenticate', [CustomerAuthController::class, 'authenticate'])->middleware('throttle:5,1,login');
 
     // Customer Portal Protected Routes
     Route::middleware('auth:sanctum')->group(function () {

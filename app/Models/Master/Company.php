@@ -267,4 +267,12 @@ class Company extends Model
     {
         return $this->activeSubscription()->first();
     }
+
+    /**
+     * Obter o tenant ativo (para compatibilidade com login único)
+     */
+    public function getTenantAttribute()
+    {
+        return $this->activeTenant;
+    }
 }

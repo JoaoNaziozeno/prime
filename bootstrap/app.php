@@ -11,6 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Desativa a validação de CSRF para todas as rotas que começam com /api/
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+        ]);
+
         // Tenant middleware
         $middleware->group('tenant', [
             'App\Http\Middleware\ResolveTenantBySlug',

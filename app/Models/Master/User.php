@@ -128,6 +128,14 @@ class User extends Authenticatable
         return strtoupper(substr($this->name, 0, 1));
     }
 
+    /**
+     * Obter a primeira empresa associada (para compatibilidade com login único)
+     */
+    public function getCompanyAttribute()
+    {
+        return $this->companies()->first();
+    }
+
     // ===== MUTATORS =====
 
     /**
@@ -139,6 +147,14 @@ class User extends Authenticatable
     }
 
     // ===== METHODS =====
+
+    /**
+     * Verificar se o usuário está ativo
+     */
+    public function isActive(): bool
+    {
+        return (bool) $this->is_active;
+    }
 
     /**
      * Verificar se é super admin

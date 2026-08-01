@@ -45,6 +45,9 @@ use App\Http\Controllers\API\Tenant\CustomReportController;
 use App\Http\Controllers\API\Tenant\ScheduledReportController;
 use App\Http\Controllers\API\Tenant\BiDashboardController;
 use App\Http\Controllers\API\Tenant\ComplianceController;
+use App\Http\Controllers\API\Tenant\CustomerController;
+use App\Http\Controllers\API\Tenant\VehicleController;
+use App\Http\Controllers\API\Tenant\DriverController;
 
 /*
 |--------------------------------------------------------------------------
@@ -92,6 +95,15 @@ Route::prefix('api')->middleware([
     'throttle:60,1',
     \App\Http\Middleware\SecurityHeadersMiddleware::class,
 ])->group(function () {
+    // Customer Routes
+    Route::apiResource('customers', CustomerController::class);
+
+    // Vehicle Routes
+    Route::apiResource('vehicles', VehicleController::class);
+
+    // Driver/Employee Routes
+    Route::apiResource('drivers', DriverController::class);
+
     // Order of Service Routes
     Route::apiResource('orders', OrderOfServiceController::class);
     Route::post('/orders/{order}/approve', [OrderOfServiceController::class, 'approve']);

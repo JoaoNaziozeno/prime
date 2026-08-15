@@ -133,7 +133,7 @@ class User extends Authenticatable
      */
     public function getCompanyAttribute()
     {
-        return $this->companies()->first();
+        return $this->companies()->first() ?? $this->ownedCompanies()->first();
     }
 
     // ===== MUTATORS =====

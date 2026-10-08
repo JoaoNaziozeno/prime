@@ -19,13 +19,17 @@ class Customer extends Model implements AuthenticatableContract
 
     protected $fillable = [
         'name',
+        'trade_name',
         'email',
         'phone',
+        'contact_name',
         'cpf_cnpj',
+        'state_registration',
         'type',
         'street',
         'number',
         'complement',
+        'neighborhood',
         'city',
         'state',
         'country',

@@ -48,6 +48,7 @@ use App\Http\Controllers\API\Tenant\ComplianceController;
 use App\Http\Controllers\API\Tenant\CustomerController;
 use App\Http\Controllers\API\Tenant\VehicleController;
 use App\Http\Controllers\API\Tenant\DriverController;
+use App\Http\Controllers\API\Tenant\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -96,6 +97,7 @@ Route::prefix('api')->middleware([
     \App\Http\Middleware\SecurityHeadersMiddleware::class,
 ])->group(function () {
     // Customer Routes
+    Route::get('/customers/stats/summary', [CustomerController::class, 'stats']);
     Route::apiResource('customers', CustomerController::class);
 
     // Vehicle Routes
@@ -103,6 +105,9 @@ Route::prefix('api')->middleware([
 
     // Driver/Employee Routes
     Route::apiResource('drivers', DriverController::class);
+
+    // User Management Routes
+    Route::apiResource('users', UserController::class);
 
     // Order of Service Routes
     Route::apiResource('orders', OrderOfServiceController::class);

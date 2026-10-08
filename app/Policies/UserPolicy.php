@@ -11,7 +11,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isSuperAdmin();
+        return $user->isAdmin();
     }
 
     /**
@@ -19,8 +19,8 @@ class UserPolicy
      */
     public function view(User $user, User $target): bool
     {
-        // Super admin vê tudo
-        if ($user->isSuperAdmin()) {
+        // Admin vê tudo
+        if ($user->isAdmin()) {
             return true;
         }
 
@@ -33,7 +33,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isSuperAdmin();
+        return $user->isAdmin();
     }
 
     /**
@@ -41,8 +41,8 @@ class UserPolicy
      */
     public function update(User $user, User $target): bool
     {
-        // Super admin pode atualizar qualquer um
-        if ($user->isSuperAdmin()) {
+        // Admin pode atualizar qualquer um
+        if ($user->isAdmin()) {
             return true;
         }
 
@@ -55,8 +55,8 @@ class UserPolicy
      */
     public function delete(User $user, User $target): bool
     {
-        // Apenas super admin pode deletar
-        return $user->isSuperAdmin() && $user->id !== $target->id;
+        // Apenas admin pode deletar outro usuário
+        return $user->isAdmin() && $user->id !== $target->id;
     }
 
     /**

@@ -18,9 +18,10 @@ const navigationItems = [
   { name: 'dashboard', label: 'Dashboard', icon: 'bi-grid-1x2-fill', disabled: false },
   { name: 'customers', label: 'Clientes', icon: 'bi-people-fill', disabled: false },
   { name: 'vehicles', label: 'Veículos', icon: 'bi-truck', disabled: false },
-  { name: 'services', label: 'Serviços', icon: 'bi-wrench-adjustable', disabled: false },
+  { name: 'services', label: 'Ordens de Serviços', icon: 'bi-wrench-adjustable', disabled: false },
   { name: 'products', label: 'Estoque e Produtos', icon: 'bi-box-seam-fill', disabled: false },
   { name: 'employees', label: 'Funcionários', icon: 'bi-person-badge', disabled: false },
+  { name: 'users', label: 'Usuários e Controle', icon: 'bi-shield-lock-fill', disabled: false },
   { name: 'settings', label: 'Configurações', icon: 'bi-gear-fill', disabled: false },
 ];
 
@@ -42,7 +43,7 @@ const navigateTo = (item) => {
       </div>
     </div>
 
-    <!-- Tenant Info -->
+    <!-- Tenant Info 
     <div class="px-4 py-3 bg-light-soft border-bottom d-flex align-items-center justify-content-between">
       <div class="text-truncate">
         <small class="text-muted d-block text-uppercase fw-bold letter-spacing-xs" style="font-size: 0.65rem;">Oficina Ativa</small>
@@ -53,7 +54,7 @@ const navigateTo = (item) => {
       <span class="badge bg-primary-soft text-primary px-2 py-1 rounded font-monospace" style="font-size: 0.7rem;">
         {{ authStore.tenantSlug }}
       </span>
-    </div>
+    </div> -->
 
     <!-- Navigation Menu -->
     <ul class="nav nav-pills flex-column mb-auto py-3 px-2 gap-1">

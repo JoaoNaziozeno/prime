@@ -172,7 +172,7 @@ const formatCurrency = (val) => {
       <header class="d-flex justify-content-between align-items-center pb-4 mb-4 border-bottom">
         <div>
           <span class="text-muted small fw-bold text-uppercase tracking-wider">Módulos</span>
-          <h1 class="h3 fw-bold text-slate-900 mb-0 font-headline">Serviços da Oficina</h1>
+          <h1 class="h3 fw-bold text-slate-900 mb-0 font-headline">Ordem de Serviço</h1>
         </div>
         <div class="d-flex align-items-center gap-2">
           <span class="badge bg-slate-900 text-white px-3 py-2 fw-semibold">

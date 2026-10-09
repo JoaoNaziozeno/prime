@@ -10,6 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Traits\Tenant\Auditable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model implements AuthenticatableContract
 {
@@ -64,6 +65,11 @@ class Customer extends Model implements AuthenticatableContract
     /**
      * Relationships
      */
+    public function vehicles(): HasMany
+    {
+        return $this->hasMany(Vehicle::class);
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

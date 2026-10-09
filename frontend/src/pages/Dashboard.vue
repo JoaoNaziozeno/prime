@@ -130,6 +130,7 @@ const activeCustomersPercent = computed(() => {
 
 // Navegação
 const goToCustomers = () => router.push({ name: 'customers' });
+const goToCustomer = (cust) => router.push({ name: 'customers', query: { search: cust.id } });
 const goToVehicles = () => router.push({ name: 'vehicles' });
 const goToServices = () => router.push({ name: 'services' });
 const goToProducts = () => router.push({ name: 'products' });
@@ -639,15 +640,20 @@ onMounted(() => {
                   <th class="text-slate-700 fw-bold border-bottom-0">Documento</th>
                   <th class="text-slate-700 fw-bold border-bottom-0">Contato</th>
                   <th class="text-slate-700 fw-bold border-bottom-0">Tipo</th>
-                  <th class="text-slate-700 fw-bold border-bottom-0">Status</th>
-                  <th class="text-end px-4 text-slate-700 fw-bold border-bottom-0">Ação</th>
+                  <th class="text-end pe-4 text-slate-700 fw-bold border-bottom-0">Status</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="cust in recentCustomers" :key="cust.id" class="table-row-compact">
+                <tr
+                  v-for="cust in recentCustomers"
+                  :key="cust.id"
+                  class="table-row-compact tr-clickable"
+                  @click="goToCustomer(cust)"
+                  title="Clique para abrir os detalhes deste cliente"
+                >
                   <td class="ps-4">
                     <span class="badge bg-light text-slate-700 border font-monospace px-2 py-1" style="font-size: 0.72rem;">
-                      #{{ cust.id }}
+                      {{ cust.id }}
                     </span>
                   </td>
                   <td>
@@ -661,7 +667,7 @@ onMounted(() => {
                   </td>
                   <td class="small text-slate-700">
                     <span v-if="cust.phone" class="font-monospace">
-                      <i class="bi bi-whatsapp text-primary me-1"></i>{{ cust.phone }}
+                      <i class="bi bi-whatsapp text-success me-1"></i>{{ cust.phone }}
                     </span>
                     <span v-else class="text-muted">Não informado</span>
                   </td>
@@ -670,7 +676,7 @@ onMounted(() => {
                       {{ cust.type === 'company' ? 'Jurídica' : 'Física' }}
                     </span>
                   </td>
-                  <td>
+                  <td class="text-end pe-4">
                     <span
                       class="badge"
                       :class="[
@@ -682,11 +688,7 @@ onMounted(() => {
                     >
                       {{ cust.status === 'active' ? 'Ativo' : (cust.status === 'suspended' ? 'Suspenso' : 'Inativo') }}
                     </span>
-                  </td>
-                  <td class="text-end px-4">
-                    <button @click="goToCustomers" class="btn btn-outline-secondary btn-sm py-1 px-2.5 rounded-lg" style="font-size: 0.75rem;">
-                      Abrir
-                    </button>
+                    <i class="bi bi-chevron-right text-muted ms-2" style="font-size: 0.75rem;"></i>
                   </td>
                 </tr>
               </tbody>
@@ -906,6 +908,16 @@ onMounted(() => {
 }
 .table-row-compact {
   height: 46px;
+}
+.tr-clickable {
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+.tr-clickable:hover {
+  background-color: #f8fafc !important;
+}
+.tr-clickable:hover td {
+  background-color: #f8fafc !important;
 }
 .badge-dot {
   width: 8px;

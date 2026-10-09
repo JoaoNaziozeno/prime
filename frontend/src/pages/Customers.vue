@@ -1,11 +1,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import api from '../services/api';
 import Sidebar from '../components/Sidebar.vue';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 
 // Estados da listagem e paginação
@@ -14,6 +15,37 @@ const pagination = ref({});
 const search = ref('');
 const loading = ref(false);
 const error = ref('');
+
+// Estados do Modal de Frota do Cliente
+const showFleetModal = ref(false);
+const activeFleetCustomer = ref(null);
+const customerVehicles = ref([]);
+const loadingFleet = ref(false);
+
+const openCustomerFleetModal = async (customer) => {
+  activeFleetCustomer.value = customer;
+  showFleetModal.value = true;
+  loadingFleet.value = true;
+  customerVehicles.value = [];
+  try {
+    const res = await api.get('/vehicles', { params: { customer_id: customer.id, per_page: 50 } });
+    customerVehicles.value = res.data.data || [];
+  } catch (err) {
+    console.error('Erro ao carregar veículos do cliente:', err);
+  } finally {
+    loadingFleet.value = false;
+  }
+};
+
+const closeFleetModal = () => {
+  showFleetModal.value = false;
+  activeFleetCustomer.value = null;
+  customerVehicles.value = [];
+};
+
+const navigateToCustomerVehicles = (customerId) => {
+  router.push({ path: '/vehicles', query: { customer_id: customerId } });
+};
 
 // Estados do modal e formulário
 const showModal = ref(false);
@@ -93,8 +125,12 @@ const closeModal = () => {
 
 // Fechar com a tecla ESC
 const handleKeyDown = (e) => {
-  if (e.key === 'Escape' && showModal.value) {
-    closeModal();
+  if (e.key === 'Escape') {
+    if (showFleetModal.value) {
+      closeFleetModal();
+    } else if (showModal.value) {
+      closeModal();
+    }
   }
 };
 
@@ -317,6 +353,9 @@ watch(search, () => {
 
 // Lifecycle
 onMounted(() => {
+  if (route.query.search) {
+    search.value = String(route.query.search);
+  }
   fetchCustomers(1);
   window.addEventListener('keydown', handleKeyDown);
 });
@@ -807,6 +846,145 @@ onUnmounted(() => {
         </div>
       </div>
 
+      <!-- Modal Flutuante de Gestão da Frota do Cliente -->
+      <div v-if="showFleetModal" class="modal-overlay" @click.self="closeFleetModal">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content bg-white shadow-lg border-0 rounded-xl overflow-hidden">
+            
+            <!-- Cabeçalho do Modal de Frota -->
+            <div class="modal-header bg-white px-4 py-3 border-bottom d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center gap-3">
+                <div class="modal-icon-badge bg-primary-soft text-primary rounded-circle d-flex align-items-center justify-content-center">
+                  <i class="bi bi-truck"></i>
+                </div>
+                <div>
+                  <h5 class="fw-bold text-slate-900 mb-0 font-headline d-flex align-items-center gap-2">
+                    <span>Frota de Veículos</span>
+                    <span class="badge bg-light text-slate-700 border font-monospace px-2 py-0.5" style="font-size: 0.75rem;">
+                      {{ activeFleetCustomer?.name }}
+                    </span>
+                  </h5>
+                  <small class="text-muted">
+                    {{ activeFleetCustomer?.type === 'company' ? 'Empresa de Transporte / Frotista' : 'Motorista / Autônomo' }}
+                    <span v-if="activeFleetCustomer?.cpf_cnpj"> • Doc: {{ activeFleetCustomer.cpf_cnpj }}</span>
+                  </small>
+                </div>
+              </div>
+              <button type="button" class="btn-close" @click="closeFleetModal" aria-label="Fechar"></button>
+            </div>
+
+            <!-- Conteúdo da Frota -->
+            <div class="modal-body bg-white px-4 py-4" style="max-height: calc(85vh - 160px); overflow-y: auto;">
+              <div v-if="loadingFleet" class="text-center py-4">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted mt-2 small">Buscando veículos da frota...</p>
+              </div>
+
+              <div v-else-if="customerVehicles.length === 0" class="text-center py-4">
+                <div class="p-3 bg-light rounded-circle d-inline-flex mb-3">
+                  <i class="bi bi-truck fs-1 text-muted"></i>
+                </div>
+                <h6 class="fw-bold text-slate-800">Nenhum veículo vinculado a este cliente</h6>
+                <p class="text-muted small mb-3">
+                  Este cliente ainda não possui caminhões ou implementos registrados na oficina.
+                </p>
+                <button
+                  @click="navigateToCustomerVehicles(activeFleetCustomer.id)"
+                  class="btn btn-primary btn-sm rounded-lg fw-semibold"
+                >
+                  <i class="bi bi-plus-lg me-1"></i> Cadastrar Primeiro Veículo
+                </button>
+              </div>
+
+              <div v-else>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <span class="text-muted small">
+                    Total de <strong>{{ customerVehicles.length }}</strong> veículo(s) cadastrado(s)
+                  </span>
+                  <button
+                    @click="navigateToCustomerVehicles(activeFleetCustomer.id)"
+                    class="btn btn-primary btn-sm rounded-lg fw-semibold d-flex align-items-center gap-1.5"
+                  >
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Novo Veículo para esta Frota</span>
+                  </button>
+                </div>
+
+                <div class="table-responsive border rounded-lg">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th class="ps-3 text-slate-700 fw-bold border-bottom-0">Placa & Frota</th>
+                        <th class="text-slate-700 fw-bold border-bottom-0">Modelo / Marca</th>
+                        <th class="text-slate-700 fw-bold border-bottom-0">Ficha Técnica</th>
+                        <th class="text-slate-700 fw-bold border-bottom-0">KM Atual</th>
+                        <th class="text-slate-700 fw-bold border-bottom-0">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="v in customerVehicles" :key="v.id">
+                        <td class="ps-3">
+                          <span class="font-monospace fw-bold text-slate-900">{{ v.plate }}</span>
+                          <div v-if="v.fleet_number" class="small text-muted font-monospace">
+                            Frota #{{ v.fleet_number }}
+                          </div>
+                        </td>
+                        <td>
+                          <div class="fw-semibold text-slate-900">{{ v.brand }} {{ v.model }}</div>
+                          <small class="text-muted text-uppercase" style="font-size: 0.65rem;">
+                            {{ v.year }} <span v-if="v.color">• {{ v.color }}</span>
+                          </small>
+                        </td>
+                        <td class="small text-slate-700">
+                          <div v-if="v.axles || v.body_type">
+                            {{ v.axles || '-' }} <span v-if="v.body_type">• {{ v.body_type }}</span>
+                          </div>
+                          <div class="text-muted font-monospace" style="font-size: 0.68rem;" v-if="v.fuel_type">
+                            {{ v.fuel_type }}
+                          </div>
+                        </td>
+                        <td class="small font-monospace text-slate-800">
+                          {{ v.odometer ? `${Number(v.odometer).toLocaleString('pt-BR')} KM` : '-' }}
+                        </td>
+                        <td>
+                          <span
+                            class="badge"
+                            :class="[
+                              v.status === 'active' ? 'bg-success-soft text-success' : '',
+                              v.status === 'inactive' ? 'bg-secondary-soft text-secondary' : '',
+                              v.status === 'maintenance' ? 'bg-warning-soft text-warning' : '',
+                            ]"
+                            style="font-size: 0.65rem;"
+                          >
+                            {{ v.status === 'active' ? 'Ativo' : (v.status === 'maintenance' ? 'Manutenção' : 'Inativo') }}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rodapé do Modal de Frota -->
+            <div class="modal-footer bg-light px-4 py-3 border-top d-flex justify-content-between">
+              <button
+                v-if="activeFleetCustomer"
+                @click="navigateToCustomerVehicles(activeFleetCustomer.id)"
+                class="btn btn-outline-primary btn-sm rounded-lg fw-semibold d-flex align-items-center gap-1.5"
+              >
+                <i class="bi bi-box-arrow-up-right"></i>
+                <span>Gerenciar no Módulo de Veículos</span>
+              </button>
+              <button type="button" @click="closeFleetModal" class="btn btn-secondary btn-sm rounded-lg fw-semibold">
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
       <!-- Tabela de Clientes -->
       <div class="card border-0 shadow-xs rounded-xl overflow-hidden">
         <div class="card-body p-0">
@@ -826,6 +1004,7 @@ onUnmounted(() => {
                   <th class="ps-4 text-slate-700 fw-bold border-bottom-0" style="width: 80px;">Contrato</th>
                   <th class="text-slate-700 fw-bold border-bottom-0">Nome / Localização</th>
                   <th class="text-slate-700 fw-bold border-bottom-0">CPF / CNPJ</th>
+                  <th class="text-slate-700 fw-bold border-bottom-0">Frota</th>
                   <th class="text-slate-700 fw-bold border-bottom-0">Contatos</th>
                   <th class="text-slate-700 fw-bold border-bottom-0">Tipo</th>
                   <th class="text-slate-700 fw-bold border-bottom-0">Status</th>
@@ -853,6 +1032,19 @@ onUnmounted(() => {
                     <small v-if="customer.state_registration" class="text-muted font-monospace" style="font-size: 0.65rem;">
                       IE: {{ customer.state_registration }}
                     </small>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      @click.stop="openCustomerFleetModal(customer)"
+                      class="btn btn-sm btn-outline-primary rounded-pill py-0.5 px-2.5 d-inline-flex align-items-center gap-1.5 font-monospace fw-semibold"
+                      style="font-size: 0.72rem;"
+                      :title="`Ver frota de ${customer.name}`"
+                    >
+                      <i class="bi bi-truck"></i>
+                      <span>{{ customer.vehicles_count || 0 }}</span>
+                      <span class="d-none d-xl-inline">veículo{{ customer.vehicles_count === 1 ? '' : 's' }}</span>
+                    </button>
                   </td>
                   <td class="small text-slate-700">
                     <div v-if="customer.phone" class="font-monospace">

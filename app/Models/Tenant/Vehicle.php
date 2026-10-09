@@ -14,13 +14,19 @@ class Vehicle extends Model
     protected $connection = 'tenant';
 
     protected $fillable = [
+        'customer_id',
         'plate',
+        'fleet_number',
         'model',
         'brand',
         'year',
         'type',
         'vin',
         'color',
+        'fuel_type',
+        'engine_type',
+        'axles',
+        'body_type',
         'capacity_tons',
         'renavam',
         'license_expiration',
@@ -52,6 +58,11 @@ class Vehicle extends Model
     /**
      * Relationships
      */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
@@ -78,6 +89,16 @@ class Vehicle extends Model
     public function scopeByPlate($query, $plate)
     {
         return $query->where('plate', strtoupper($plate));
+    }
+
+    public function scopeByCustomer($query, $customerId)
+    {
+        return $query->where('customer_id', $customerId);
+    }
+
+    public function scopeByFleetNumber($query, $fleetNumber)
+    {
+        return $query->where('fleet_number', 'like', "%{$fleetNumber}%");
     }
 
     public function scopeByBrand($query, $brand)

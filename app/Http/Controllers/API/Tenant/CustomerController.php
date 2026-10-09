@@ -16,7 +16,7 @@ class CustomerController extends Controller
     {
         $this->authorize('viewAny', Customer::class);
 
-        $query = Customer::query();
+        $query = Customer::query()->withCount('vehicles');
 
         if ($request->has('search') && !empty($request->get('search'))) {
             $term = $request->get('search');
@@ -85,6 +85,8 @@ class CustomerController extends Controller
     public function show(Customer $customer): JsonResponse
     {
         $this->authorize('view', $customer);
+
+        $customer->loadCount('vehicles')->load('vehicles');
 
         return response()->json($customer);
     }

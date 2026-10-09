@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import api from '../services/api';
@@ -17,11 +17,12 @@ const loading = ref(false);
 const error = ref('');
 const successMessage = ref('');
 
-// Estados do formulário
-const showForm = ref(false);
+// Estados do modal e formulário
+const showModal = ref(false);
 const isEditing = ref(false);
 const editingId = ref(null);
 const submitLoading = ref(false);
+const formError = ref('');
 
 const form = ref({
   name: '',
@@ -42,6 +43,28 @@ const resetForm = () => {
   };
   isEditing.value = false;
   editingId.value = null;
+  formError.value = '';
+};
+
+// Abrir modal de criação
+const openCreateModal = () => {
+  resetForm();
+  formError.value = '';
+  showModal.value = true;
+};
+
+// Fechar modal
+const closeModal = () => {
+  showModal.value = false;
+  resetForm();
+  formError.value = '';
+};
+
+// Fechar com ESC
+const handleKeyDown = (e) => {
+  if (e.key === 'Escape' && showModal.value) {
+    closeModal();
+  }
 };
 
 // Estatísticas calculadas locais
@@ -95,7 +118,7 @@ const fetchUsers = async (page = 1) => {
 // Submissão do formulário
 const handleSubmit = async () => {
   submitLoading.value = true;
-  error.value = '';
+  formError.value = '';
   successMessage.value = '';
   try {
     const payload = { ...form.value };
@@ -110,11 +133,10 @@ const handleSubmit = async () => {
       await api.post('/users', payload);
       successMessage.value = 'Usuário cadastrado e associado com sucesso!';
     }
-    resetForm();
-    showForm.value = false;
+    closeModal();
     fetchUsers();
   } catch (err) {
-    error.value = err.response?.data?.message || err.response?.data?.error || 'Erro ao processar requisição de usuário.';
+    formError.value = err.response?.data?.message || err.response?.data?.error || 'Erro ao processar requisição de usuário.';
   } finally {
     submitLoading.value = false;
   }
@@ -131,7 +153,8 @@ const handleEdit = (user) => {
   };
   isEditing.value = true;
   editingId.value = user.id;
-  showForm.value = true;
+  formError.value = '';
+  showModal.value = true;
 };
 
 // Desassociar usuário da empresa
@@ -152,10 +175,15 @@ watch(search, () => {
   fetchUsers(1);
 });
 
-// Inicialização
+// Lifecycle
 onMounted(async () => {
+  window.addEventListener('keydown', handleKeyDown);
   await fetchTenantRoles();
   await fetchUsers(1);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
 });
 
 // Helper para iniciais
@@ -184,25 +212,25 @@ const getInitials = (name) => {
           <h1 class="h3 fw-bold text-slate-900 mb-0 font-headline">Usuários e Permissões</h1>
         </div>
         <div class="d-flex align-items-center gap-2">
-          <span class="badge bg-slate-900 text-white px-3 py-2 fw-semibold">
-            Oficina: {{ authStore.tenantName || 'Carregando...' }}
+          <span class="badge bg-slate-900 text-white px-3 py-2 fw-semibold rounded-lg shadow-xs">
+            <i class="bi bi-building me-1"></i> Oficina: {{ authStore.tenantName || 'Carregando...' }}
           </span>
         </div>
       </header>
 
       <!-- Alertas de Status -->
       <div v-if="error" class="alert alert-danger alert-dismissible fade show rounded-lg shadow-sm" role="alert">
-        {{ error }}
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}
       </div>
       <div v-if="successMessage" class="alert alert-success alert-dismissible fade show rounded-lg shadow-sm" role="alert">
-        {{ successMessage }}
+        <i class="bi bi-check-circle-fill me-2"></i> {{ successMessage }}
       </div>
 
       <!-- Cards de Métricas Rápidas -->
-      <div class="row mb-4">
+      <div class="row g-3 mb-4">
         <div class="col-md-4">
-          <div class="card border-0 shadow-xs rounded-xl p-4 d-flex align-items-center gap-3">
-            <div class="icon-badge bg-primary-soft text-primary p-3 rounded">
+          <div class="card border-0 shadow-xs rounded-xl p-4 d-flex flex-row align-items-center gap-3">
+            <div class="icon-badge bg-primary-soft text-primary p-3 rounded-lg">
               <i class="bi bi-people fs-4"></i>
             </div>
             <div>
@@ -212,8 +240,8 @@ const getInitials = (name) => {
           </div>
         </div>
         <div class="col-md-4">
-          <div class="card border-0 shadow-xs rounded-xl p-4 d-flex align-items-center gap-3">
-            <div class="icon-badge bg-success-soft text-success p-3 rounded">
+          <div class="card border-0 shadow-xs rounded-xl p-4 d-flex flex-row align-items-center gap-3">
+            <div class="icon-badge bg-success-soft text-success p-3 rounded-lg">
               <i class="bi bi-shield-check fs-4"></i>
             </div>
             <div>
@@ -223,8 +251,8 @@ const getInitials = (name) => {
           </div>
         </div>
         <div class="col-md-4">
-          <div class="card border-0 shadow-xs rounded-xl p-4 d-flex align-items-center gap-3">
-            <div class="icon-badge bg-secondary-soft text-secondary p-3 rounded">
+          <div class="card border-0 shadow-xs rounded-xl p-4 d-flex flex-row align-items-center gap-3">
+            <div class="icon-badge bg-secondary-soft text-secondary p-3 rounded-lg">
               <i class="bi bi-person fs-4"></i>
             </div>
             <div>
@@ -254,90 +282,17 @@ const getInitials = (name) => {
           </div>
 
           <button
-            @click="showForm = !showForm; if(!showForm) resetForm();"
-            class="btn btn-primary fw-semibold rounded-lg d-flex align-items-center gap-2"
+            @click="openCreateModal"
+            class="btn btn-primary fw-semibold rounded-lg d-flex align-items-center gap-2 shadow-sm px-3.5 py-2"
           >
-            <i class="bi" :class="showForm ? 'bi-x-lg' : 'bi-plus-lg'"></i>
-            {{ showForm ? 'Fechar Formulário' : 'Novo Usuário' }}
+            <i class="bi bi-plus-lg"></i>
+            <span>Novo Usuário</span>
           </button>
         </div>
       </div>
 
-      <!-- Formulário de Cadastro / Edição (Slide-over ou Slide-down card) -->
-      <div v-if="showForm" class="card border-0 shadow-xs mb-4 rounded-xl border-top-slate">
-        <div class="card-header bg-white border-0 pt-4 px-4">
-          <h5 class="fw-bold text-slate-900 mb-0 font-headline">
-            {{ isEditing ? 'Editar Perfil e Permissões do Usuário' : 'Cadastrar Novo Usuário Administrativo / Operacional' }}
-          </h5>
-        </div>
-        <div class="card-body px-4 pb-4">
-          <form @submit.prevent="handleSubmit">
-            <div class="row">
-              <!-- Nome -->
-              <div class="col-md-6 mb-3">
-                <label class="form-label small fw-semibold text-slate-700">Nome Completo</label>
-                <input v-model="form.name" type="text" class="form-control rounded-lg" required placeholder="Ex: Roberto Silva" />
-              </div>
-              <!-- Email -->
-              <div class="col-md-6 mb-3">
-                <label class="form-label small fw-semibold text-slate-700">Endereço de E-mail (Acesso Único)</label>
-                <input v-model="form.email" type="email" class="form-control rounded-lg" required placeholder="email@dominio.com" />
-              </div>
-
-              <!-- Senha -->
-              <div class="col-md-6 mb-3">
-                <label class="form-label small fw-semibold text-slate-700">
-                  Senha de Acesso {{ isEditing ? '(Deixe em branco para manter a atual)' : '' }}
-                </label>
-                <input v-model="form.password" type="password" class="form-control rounded-lg" :required="!isEditing" placeholder="Mínimo 6 caracteres" />
-              </div>
-              <!-- Perfil Painel Central -->
-              <div class="col-md-6 mb-3">
-                <label class="form-label small fw-semibold text-slate-700">Nível Administrativo Central</label>
-                <select v-model="form.role" class="form-select rounded-lg" required>
-                  <option value="user">Usuário Comum (Apenas leitura/módulos permitidos)</option>
-                  <option value="admin">Administrador Oficina (Acesso total)</option>
-                </select>
-              </div>
-
-              <!-- Permissões e Papéis Locais da Oficina (RBAC) -->
-              <div class="col-12 mb-4 mt-2">
-                <label class="form-label small fw-semibold text-slate-700 d-block mb-2">Papéis e Perfis Locais na Oficina (RBAC)</label>
-                <div class="d-flex flex-wrap gap-3 p-3 bg-light rounded-lg border">
-                  <div v-if="tenantRolesList.length === 0" class="text-muted small">
-                    Nenhum papel local cadastrado. Você pode criá-los no módulo de RBAC.
-                  </div>
-                  <div v-else v-for="role in tenantRolesList" :key="role.id" class="form-check form-check-inline">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      :id="'role_' + role.id"
-                      :value="role.name"
-                      v-model="form.roles"
-                    />
-                    <label class="form-check-label small fw-medium" :for="'role_' + role.id">
-                      {{ role.name }} <span class="text-muted" style="font-size: 0.7rem;">({{ role.description || 'Sem descrição' }})</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="d-flex justify-content-end gap-2">
-              <button type="button" @click="showForm = false; resetForm();" class="btn btn-light fw-semibold rounded-lg">
-                Cancelar
-              </button>
-              <button type="submit" class="btn btn-primary fw-semibold rounded-lg" :disabled="submitLoading">
-                <span v-if="submitLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                {{ isEditing ? 'Salvar Alterações' : 'Criar Usuário' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
       <!-- Tabela de Usuários -->
-      <div class="card border-0 shadow-xs rounded-xl overflow-hidden">
+      <div class="card border-0 shadow-xs rounded-xl overflow-hidden mb-4">
         <div class="card-body p-0">
           <div v-if="loading" class="text-center py-5">
             <div class="spinner-border text-primary" role="status"></div>
@@ -364,7 +319,7 @@ const getInitials = (name) => {
                   <td class="px-4">
                     <div class="d-flex align-items-center gap-3">
                       <!-- Avatar Iniciais -->
-                      <div class="avatar bg-slate-900 text-white fw-bold d-flex align-items-center justify-content-center rounded-circle">
+                      <div class="avatar bg-slate-900 text-white fw-bold d-flex align-items-center justify-content-center rounded-circle shadow-xs">
                         {{ getInitials(user.name) }}
                       </div>
                       <div>
@@ -454,6 +409,156 @@ const getInitials = (name) => {
         </div>
       </div>
 
+      <!-- MODAL FLUTUANTE DE CADASTRO / EDIÇÃO DE USUÁRIO -->
+      <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content bg-white shadow-lg border-0 rounded-xl overflow-hidden">
+            
+            <!-- Cabeçalho do Modal -->
+            <div class="modal-header bg-white px-4 py-3 border-bottom d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center gap-3">
+                <div class="modal-icon-badge bg-primary-soft text-primary rounded-circle d-flex align-items-center justify-content-center">
+                  <i class="bi" :class="isEditing ? 'bi-pencil-square' : 'bi-person-plus-fill'"></i>
+                </div>
+                <div>
+                  <h5 class="fw-bold text-slate-900 mb-0 font-headline d-flex align-items-center gap-2">
+                    <span>{{ isEditing ? 'Editar Perfil e Permissões do Usuário' : 'Novo Usuário do Sistema' }}</span>
+                    <span v-if="isEditing" class="badge bg-light text-slate-700 border font-monospace px-2 py-0.5" style="font-size: 0.72rem;">
+                      #{{ editingId }}
+                    </span>
+                  </h5>
+                  <small class="text-muted">
+                    {{ isEditing ? 'Atualize as credenciais e níveis de acesso deste colaborador' : 'Cadastre um novo colaborador e defina seu perfil e permissões de acesso' }}
+                  </small>
+                </div>
+              </div>
+              <button type="button" class="btn-close" @click="closeModal" aria-label="Fechar"></button>
+            </div>
+
+            <!-- Formulário com Rolagem Interna -->
+            <form @submit.prevent="handleSubmit" class="d-flex flex-column flex-grow-1 overflow-hidden">
+              <div class="modal-body bg-white px-4 py-4" style="max-height: calc(85vh - 140px); overflow-y: auto;">
+                
+                <!-- Alerta de Erro no Modal -->
+                <div v-if="formError" class="alert alert-danger alert-dismissible fade show rounded-lg py-2 px-3 small mb-3">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                  {{ formError }}
+                </div>
+
+                <div class="row g-3">
+                  <!-- Nome Completo -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-slate-700">
+                      Nome Completo <span class="text-danger">*</span>
+                    </label>
+                    <input
+                      v-model="form.name"
+                      type="text"
+                      class="form-control rounded-lg"
+                      required
+                      placeholder="Ex: Roberto Silva"
+                    />
+                  </div>
+
+                  <!-- Email -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-slate-700">
+                      Endereço de E-mail (Acesso Único) <span class="text-danger">*</span>
+                    </label>
+                    <input
+                      v-model="form.email"
+                      type="email"
+                      class="form-control rounded-lg"
+                      required
+                      placeholder="email@dominio.com"
+                    />
+                  </div>
+
+                  <!-- Senha -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-slate-700 d-flex justify-content-between align-items-center">
+                      <span>Senha de Acesso {{ !isEditing ? '*' : '' }}</span>
+                      <span v-if="isEditing" class="text-muted fw-normal" style="font-size: 0.7rem;">(Deixe em branco para manter a atual)</span>
+                    </label>
+                    <input
+                      v-model="form.password"
+                      type="password"
+                      class="form-control rounded-lg"
+                      :required="!isEditing"
+                      placeholder="Mínimo 6 caracteres"
+                    />
+                  </div>
+
+                  <!-- Nível Administrativo Central -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-slate-700">
+                      Nível Administrativo Central <span class="text-danger">*</span>
+                    </label>
+                    <select v-model="form.role" class="form-select rounded-lg" required>
+                      <option value="user">Usuário Comum (Apenas leitura/módulos permitidos)</option>
+                      <option value="admin">Administrador Oficina (Acesso total)</option>
+                    </select>
+                  </div>
+
+                  <!-- Papéis e Perfis Locais na Oficina (RBAC) -->
+                  <div class="col-12 mt-3">
+                    <label class="form-label small fw-semibold text-slate-700 d-block mb-2">
+                      Papéis e Perfis Locais na Oficina (RBAC)
+                    </label>
+                    <div class="p-3 bg-light rounded-lg border">
+                      <div v-if="tenantRolesList.length === 0" class="text-muted small d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle text-primary"></i>
+                        <span>Nenhum papel local cadastrado. Você pode criá-los no módulo de RBAC.</span>
+                      </div>
+                      <div v-else class="row g-2">
+                        <div
+                          v-for="role in tenantRolesList"
+                          :key="role.id"
+                          class="col-sm-6"
+                        >
+                          <div class="form-check p-2.5 bg-white rounded-lg border">
+                            <input
+                              class="form-check-input ms-1 me-2"
+                              type="checkbox"
+                              :id="'role_' + role.id"
+                              :value="role.name"
+                              v-model="form.roles"
+                            />
+                            <label class="form-check-label small fw-medium" :for="'role_' + role.id">
+                              {{ role.name }}
+                              <span class="text-muted d-block" style="font-size: 0.7rem;">
+                                {{ role.description || 'Sem descrição cadastrada' }}
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Rodapé de Ações do Modal -->
+              <div class="modal-footer bg-light px-4 py-3 border-top d-flex justify-content-end align-items-center gap-2">
+                <button type="button" @click="closeModal" class="btn btn-outline-secondary fw-semibold rounded-lg px-3">
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary fw-semibold rounded-lg px-4 d-flex align-items-center gap-2 shadow-sm"
+                  :disabled="submitLoading"
+                >
+                  <span v-if="submitLoading" class="spinner-border spinner-border-sm" role="status"></span>
+                  <span>{{ isEditing ? 'Salvar Alterações' : 'Criar Usuário' }}</span>
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -468,9 +573,6 @@ const getInitials = (name) => {
 .bg-slate-900 {
   background-color: #0f172a;
 }
-.border-top-slate {
-  border-top: 3px solid #0f172a;
-}
 .rounded-xl {
   border-radius: 12px;
 }
@@ -478,7 +580,7 @@ const getInitials = (name) => {
   border-radius: 8px;
 }
 .bg-primary-soft {
-  background-color: rgba(13, 110, 253, 0.1);
+  background-color: rgba(13, 110, 253, 0.08);
 }
 .bg-secondary-soft {
   background-color: rgba(108, 117, 125, 0.1);
@@ -507,5 +609,55 @@ const getInitials = (name) => {
 .form-control:focus, .form-select:focus {
   border-color: #0f172a;
   box-shadow: 0 0 0 0.2rem rgba(15, 23, 42, 0.15);
+}
+
+/* Estilos do Modal Flutuante (Padrão Prime ERP) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.modal-dialog {
+  width: 100%;
+  max-width: 820px;
+  margin: auto;
+  animation: modalSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-content {
+  background-color: #ffffff !important;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-icon-badge {
+  width: 38px;
+  height: 38px;
+  font-size: 1.1rem;
 }
 </style>

@@ -19,14 +19,27 @@ class PaymentWebhookController extends Controller
      */
     public function handle(Request $request, string $gateway): JsonResponse
     {
+        // Fail closed: nothing is processed unless the gateway signature is valid.
+        if (!$this->hasValidSignature($request, $gateway)) {
+            Log::warning('Payment webhook rejected: invalid or missing signature', [
+                'gateway' => $gateway,
+                'ip' => $request->ip(),
+            ]);
+            return response()->json(['error' => 'Assinatura inválida.'], 401);
+        }
+
         $payload = $request->all();
 
         // Extract transaction ID and event status depending on the gateway
         $transactionId = $payload['transaction_id'] ?? data_get($payload, 'data.object.id');
-        $event = $payload['event'] ?? data_get($payload, 'type') ?? $payload['status'] ?? 'completed';
+        $event = $payload['event'] ?? data_get($payload, 'type') ?? $payload['status'] ?? null;
 
         if (!$transactionId) {
             return response()->json(['error' => 'Transaction ID não encontrado no payload.'], 400);
+        }
+
+        if (!$event) {
+            return response()->json(['error' => 'Evento não informado no payload.'], 400);
         }
 
         try {
@@ -39,7 +52,72 @@ class PaymentWebhookController extends Controller
 
             return response()->json(['status' => 'webhook_processed']);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
+            Log::error('Payment webhook processing failed', [
+                'gateway' => $gateway,
+                'transaction_id' => $transactionId,
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['error' => 'Não foi possível processar o webhook.'], 400);
         }
+    }
+
+    /**
+     * Verify the webhook signature using the secret configured for the gateway.
+     *
+     * - Stripe: "Stripe-Signature: t=<timestamp>,v1=<hmac>" over "<timestamp>.<raw body>".
+     * - Others: "X-Webhook-Signature" or "X-Signature": <hex hmac-sha256 of the raw body>.
+     * - Asaas: "asaas-access-token" token comparison.
+     */
+    private function hasValidSignature(Request $request, string $gateway): bool
+    {
+        $secret = config("services.{$gateway}.webhook_secret");
+
+        if (empty($secret)) {
+            return false;
+        }
+
+        $rawBody = $request->getContent();
+
+        if ($gateway === 'stripe') {
+            $header = (string) $request->header('Stripe-Signature', '');
+            $timestamp = null;
+            $signatures = [];
+
+            foreach (explode(',', $header) as $part) {
+                [$key, $value] = array_pad(explode('=', trim($part), 2), 2, null);
+                if ($key === 't') {
+                    $timestamp = $value;
+                } elseif ($key === 'v1' && $value) {
+                    $signatures[] = $value;
+                }
+            }
+
+            // Reject missing data and replays older than 5 minutes.
+            if (!$timestamp || empty($signatures) || abs(time() - (int) $timestamp) > 300) {
+                return false;
+            }
+
+            $expected = hash_hmac('sha256', $timestamp . '.' . $rawBody, $secret);
+
+            foreach ($signatures as $signature) {
+                if (hash_equals($expected, $signature)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Asaas token verification support
+        if ($gateway === 'asaas') {
+            $asaasToken = (string) $request->header('asaas-access-token', '');
+            if ($asaasToken !== '' && hash_equals($secret, $asaasToken)) {
+                return true;
+            }
+        }
+
+        $signature = (string) ($request->header('X-Webhook-Signature') ?: $request->header('X-Signature') ?: '');
+
+        return $signature !== '' && hash_equals(hash_hmac('sha256', $rawBody, $secret), $signature);
     }
 }

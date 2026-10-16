@@ -4,12 +4,17 @@ namespace App\Http\Controllers\API\Master;
 
 use App\Http\Controllers\Controller;
 use App\Models\Master\User;
+use App\Services\Master\TotpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        protected TotpService $totpService
+    ) {}
+
     public function login(Request $request): JsonResponse
     {
         $request->validate([
@@ -25,11 +30,38 @@ class AuthController extends Controller
             ], 401);
         }
 
-        if(!$user->isActive()){
+        if (!$user->isActive()) {
             return response()->json([
                 'message' => 'Esta conta de usuário está desativada.',
             ], 401);
         }
+
+        // Enforce two-factor authentication when it is enabled and confirmed.
+        if ($user->two_factor_secret && $user->two_factor_confirmed_at) {
+            $code = $request->input('two_factor_code');
+            $recoveryCode = $request->input('recovery_code');
+
+            if (!$code && !$recoveryCode) {
+                return response()->json([
+                    'message' => 'Código de autenticação em dois fatores necessário.',
+                    'two_factor_required' => true,
+                ], 422);
+            }
+
+            $valid = $code
+                ? $this->totpService->verifyCode($user->two_factor_secret, (string) $code)
+                : $this->consumeRecoveryCode($user, (string) $recoveryCode);
+
+            if (!$valid) {
+                return response()->json([
+                    'message' => 'Código de autenticação inválido.',
+                    'two_factor_required' => true,
+                ], 401);
+            }
+        }
+
+        // Registrar auditoria de login
+        $user->recordLogin($request->ip());
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -48,5 +80,36 @@ class AuthController extends Controller
                 'name' => $user->company->name,
             ] : null
         ]);
+    }
+
+    /**
+     * Validate a recovery code and remove it so it can only be used once.
+     */
+    private function consumeRecoveryCode(User $user, string $input): bool
+    {
+        if (!$user->two_factor_recovery_codes) {
+            return false;
+        }
+
+        try {
+            $codes = json_decode(decrypt($user->two_factor_recovery_codes), true) ?: [];
+        } catch (\Throwable $e) {
+            return false;
+        }
+
+        $input = trim($input);
+
+        foreach ($codes as $index => $code) {
+            if (hash_equals((string) $code, $input)) {
+                unset($codes[$index]);
+                $user->forceFill([
+                    'two_factor_recovery_codes' => encrypt(json_encode(array_values($codes))),
+                ])->save();
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

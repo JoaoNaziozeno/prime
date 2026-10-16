@@ -11,6 +11,19 @@ use Illuminate\Support\Facades\Storage;
 class SettingController extends Controller
 {
     /**
+     * Placeholder returned instead of secret values.
+     */
+    private const SECRET_MASK = '********';
+
+    /**
+     * Whether a setting holds a credential that must never be returned by the API.
+     */
+    private function isSecretKey(string $key): bool
+    {
+        return (bool) preg_match('/(secret|password|token|api_key|private_key|webhook_secret|credentials|cert)/i', $key);
+    }
+
+    /**
      * Display a listing of the settings.
      */
     public function index(Request $request): JsonResponse
@@ -19,6 +32,17 @@ class SettingController extends Controller
         
         $formatted = [];
         foreach ($settings as $setting) {
+            if ($this->isSecretKey($setting->key)) {
+                $hasValue = !empty($setting->value);
+                $formatted[$setting->key] = [
+                    'value' => $hasValue ? self::SECRET_MASK : null,
+                    'type' => $setting->type,
+                    'group' => $setting->group,
+                    'secret' => true,
+                ];
+                continue;
+            }
+
             $formatted[$setting->key] = [
                 'value' => Setting::get($setting->key),
                 'type' => $setting->type,
@@ -47,6 +71,11 @@ class SettingController extends Controller
         ]);
 
         foreach ($request->settings as $item) {
+            // A masked secret sent back by the client means "unchanged".
+            if ($this->isSecretKey($item['key']) && ($item['value'] ?? null) === self::SECRET_MASK) {
+                continue;
+            }
+
             Setting::set(
                 $item['key'],
                 $item['value'],

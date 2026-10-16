@@ -156,10 +156,17 @@ describe('Payment API Endpoints', function () {
 
         $url = "http://payment-api-tenant.prime-erp.local/api/payments/webhook/pix";
 
-        $response = $this->postJson($url, [
+        config(['services.pix.webhook_secret' => 'test-webhook-secret']);
+
+        $payload = [
             'transaction_id' => 'tx_webhook_999',
             'status' => 'completed',
             'event' => 'completed',
+        ];
+        $signature = hash_hmac('sha256', json_encode($payload), 'test-webhook-secret');
+
+        $response = $this->actingAs($this->user)->postJson($url, $payload, [
+            'X-Webhook-Signature' => $signature,
         ]);
 
         $response->assertStatus(200);
@@ -169,6 +176,45 @@ describe('Payment API Endpoints', function () {
 
         expect($payment->refresh()->status)->toBe(Payment::STATUS_COMPLETED);
         expect($this->invoice->refresh()->status)->toBe(Invoice::STATUS_PAID);
+    });
+
+    test('webhook without a valid signature is rejected and does not confirm the payment', function () {
+        $this->invoice->update(['status' => Invoice::STATUS_SENT]);
+
+        $payment = Payment::factory()->pending()->create([
+            'invoice_id' => $this->invoice->id,
+            'payment_method_id' => $this->method->id,
+            'amount' => 500.00,
+            'gateway' => 'pix',
+            'gateway_transaction_id' => 'tx_webhook_forged',
+        ]);
+
+        $url = "http://payment-api-tenant.prime-erp.local/api/payments/webhook/pix";
+        config(['services.pix.webhook_secret' => 'test-webhook-secret']);
+
+        $payload = ['transaction_id' => 'tx_webhook_forged', 'event' => 'completed'];
+
+        // No signature at all
+        $this->actingAs($this->user)->postJson($url, $payload)->assertStatus(401);
+
+        // Wrong signature
+        $this->actingAs($this->user)->postJson($url, $payload, [
+            'X-Webhook-Signature' => hash_hmac('sha256', json_encode($payload), 'another-secret'),
+        ])->assertStatus(401);
+
+        expect($payment->refresh()->status)->toBe(Payment::STATUS_PENDING);
+        expect($this->invoice->refresh()->status)->toBe(Invoice::STATUS_SENT);
+    });
+
+    test('webhook is rejected when no secret is configured for the gateway', function () {
+        $url = "http://payment-api-tenant.prime-erp.local/api/payments/webhook/pix";
+        config(['services.pix.webhook_secret' => null]);
+
+        $payload = ['transaction_id' => 'tx_any', 'event' => 'completed'];
+
+        $this->actingAs($this->user)->postJson($url, $payload, [
+            'X-Webhook-Signature' => hash_hmac('sha256', json_encode($payload), ''),
+        ])->assertStatus(401);
     });
 
     test('can request refund via API', function () {

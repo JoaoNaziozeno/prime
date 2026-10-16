@@ -275,4 +275,12 @@ class Company extends Model
     {
         return $this->activeTenant;
     }
+
+    /**
+     * Ensure the model always queries the central connection name.
+     */
+    public function getConnectionName()
+    {
+        return config('tenancy.database.central_connection');
+    }
 }

@@ -112,4 +112,39 @@ class AuthController extends Controller
 
         return false;
     }
+
+    /**
+     * Logout: revoga o token atual.
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'Sessão encerrada com sucesso.']);
+    }
+
+    /**
+     * Troca de senha pelo próprio usuário.
+     */
+    public function changePassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'password'         => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['message' => 'Senha atual incorreta.'], 422);
+        }
+
+        $user->update(['password' => Hash::make($request->password)]);
+
+        // Revoga todos os tokens exceto o atual, forçando relogin em outros dispositivos
+        $currentTokenId = $user->currentAccessToken()->id;
+        $user->tokens()->where('id', '!=', $currentTokenId)->delete();
+
+        return response()->json(['message' => 'Senha alterada com sucesso. Outros dispositivos foram desconectados.']);
+    }
 }

@@ -45,6 +45,7 @@ class TenantDatabaseSeeder extends Seeder
         $this->call([
             ProductAndServiceSeeder::class,
             OrderOfServiceSeeder::class,
+            CashManagementSeeder::class,
         ]);
     }
 }

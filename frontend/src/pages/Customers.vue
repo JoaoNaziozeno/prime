@@ -276,7 +276,7 @@ const fetchCustomers = async (page = 1) => {
       total: response.data.total
     };
   } catch (err) {
-    error.value = 'Falha ao buscar clientes do servidor.';
+    error.value = err.response?.data?.message || 'Falha ao buscar clientes do servidor.';
   } finally {
     loading.value = false;
   }

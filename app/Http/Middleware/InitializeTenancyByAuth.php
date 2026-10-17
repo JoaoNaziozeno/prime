@@ -18,13 +18,32 @@ class InitializeTenancyByAuth
                 'message' => 'Você precisa estar logado para acessar este recurso.', ], 401);
         }
 
-        // Se for um Super Admin, não inicializa o tenant
+        // Se for um Super Admin
         if ($user->role === 'super_admin') {
+            if (!function_exists('tenant') || !tenant()) {
+                $slug = $request->header('X-Tenant') ?? $request->header('X-Tenant-Slug');
+                if ($slug) {
+                    $tenant = \App\Models\Master\Tenant::where('slug', $slug)->active()->first();
+                    if ($tenant) {
+                        tenancy()->initialize($tenant);
+                    }
+                } else {
+                    $company = $user->companies()->first();
+                    if ($company && ($tenant = $company->activeTenant()->first())) {
+                        tenancy()->initialize($tenant);
+                    }
+                }
+            }
             return $next($request);
         }
 
         // Se for um Cliente (Portal do Cliente), a conexão do tenant já foi inicializada via Header
         if ($user instanceof \App\Models\Tenant\Customer) {
+            return $next($request);
+        }
+
+        // Se a tenancy já foi inicializada (ex: via InitializeTenancyByHeader)
+        if (function_exists('tenant') && tenant()) {
             return $next($request);
         }
 

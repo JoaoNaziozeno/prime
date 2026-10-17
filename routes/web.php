@@ -11,6 +11,12 @@ Route::get('/', function () {
 // Rota de Login único (Central)
 Route::post('/api/auth/login', [AuthController::class, 'login'])->middleware('throttle:5,1,login');
 
+// Rotas autenticadas (Central)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/api/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/api/auth/change-password', [AuthController::class, 'changePassword']);
+});
+
 // Customer Portal Public Routes
 Route::post('/api/customer/login', [CustomerAuthController::class, 'login'])->middleware('throttle:5,1,login');
 Route::post('/api/customer/authenticate', [CustomerAuthController::class, 'authenticate'])->middleware('throttle:5,1,login');

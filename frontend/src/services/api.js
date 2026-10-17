@@ -35,4 +35,22 @@ api.interceptors.request.use(
     }
 );
 
+// Interceptor de resposta para redirecionar em caso de 401 (Unauthenticated)
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_user');
+            localStorage.removeItem('tenant_slug');
+            localStorage.removeItem('tenant_name');
+
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default api;

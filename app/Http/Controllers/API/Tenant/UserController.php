@@ -69,7 +69,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => "required|email|unique:{$centralConn}.users,email",
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:8',
             'role' => 'nullable|string|in:admin,user',
             'roles' => 'nullable|array',
             'roles.*' => 'string|exists:tenant.roles,name',
@@ -156,7 +156,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => "required|email|unique:{$centralConn}.users,email," . $user->id,
-            'password' => 'nullable|string|min:6',
+            'password' => 'nullable|string|min:8',
             'role' => 'nullable|string|in:admin,user',
             'is_active' => 'nullable|boolean',
             'roles' => 'nullable|array',

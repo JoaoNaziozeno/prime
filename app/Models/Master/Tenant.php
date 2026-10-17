@@ -122,12 +122,22 @@ class Tenant extends Model implements TenantWithDatabase
         'notes',
     ];
 
+    /**
+     * Credentials must never be included in API serialization.
+     */
+    protected $hidden = [
+        'db_password',
+        'db_username',
+    ];
+
     protected $casts = [
         'activated_at' => 'datetime',
-        'settings' => 'json',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
+        'settings'     => 'json',
+        'created_at'   => 'datetime',
+        'updated_at'   => 'datetime',
+        'deleted_at'   => 'datetime',
+        // Encrypt the database password at rest so it is never stored in plaintext
+        'db_password'  => 'encrypted',
     ];
 
     // ===== CONSTANTS =====

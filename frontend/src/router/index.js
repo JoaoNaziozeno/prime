@@ -51,6 +51,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/cash',
+      name: 'cash',
+      component: () => import('../pages/CashManagement.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: () => import('../pages/Settings.vue'),

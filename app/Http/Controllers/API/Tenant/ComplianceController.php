@@ -16,10 +16,15 @@ class ComplianceController extends Controller
         protected ComplianceService $complianceService
     ) {}
 
+    /**
+     * Anonimização é irreversível — exige administrador.
+     */
     public function anonymizeCustomer(Customer $customer, Request $request): JsonResponse
     {
-        if (!$request->user() instanceof \App\Models\Master\User) {
-            return response()->json(['error' => 'Acesso restrito a funcionários.'], 403);
+        $user = $request->user();
+
+        if (!$user instanceof \App\Models\Master\User || !$user->isAdmin()) {
+            return response()->json(['error' => 'Apenas administradores podem anonimizar dados pessoais.'], 403);
         }
 
         $this->complianceService->anonymizeCustomer($customer);
@@ -29,10 +34,15 @@ class ComplianceController extends Controller
         ]);
     }
 
+    /**
+     * Anonimização é irreversível — exige administrador.
+     */
     public function anonymizeDriver(Driver $driver, Request $request): JsonResponse
     {
-        if (!$request->user() instanceof \App\Models\Master\User) {
-            return response()->json(['error' => 'Acesso restrito a funcionários.'], 403);
+        $user = $request->user();
+
+        if (!$user instanceof \App\Models\Master\User || !$user->isAdmin()) {
+            return response()->json(['error' => 'Apenas administradores podem anonimizar dados pessoais.'], 403);
         }
 
         $this->complianceService->anonymizeDriver($driver);
@@ -49,32 +59,26 @@ class ComplianceController extends Controller
         }
 
         $validated = $request->validate([
-            'retention_months' => 'required|integer|min:1',
+            'retention_months' => 'required|integer|min:12',
         ]);
 
         $deletedCount = $this->complianceService->purgeAuditLogs($validated['retention_months']);
 
         return response()->json([
-            'message' => 'Purge de logs concluído.',
+            'message'               => 'Purge de logs concluído.',
             'deleted_records_count' => $deletedCount,
         ]);
     }
 
+    /**
+     * NF-e — funcionalidade não implementada.
+     * Retorna 501 Not Implemented para não enganar usuários.
+     */
     public function transmitNfe(Invoice $invoice, Request $request): JsonResponse
     {
-        if (!$request->user() instanceof \App\Models\Master\User) {
-            return response()->json(['error' => 'Acesso restrito a funcionários.'], 403);
-        }
-
-        if ($invoice->status !== Invoice::STATUS_PAID) {
-            return response()->json(['error' => 'Apenas faturas pagas podem ter NF-e emitida.'], 400);
-        }
-
-        $result = $this->complianceService->transmitInvoiceToNfe($invoice);
-
         return response()->json([
-            'message' => 'NF-e emitida e transmitida com sucesso para o fisco.',
-            'nfe_details' => $result,
-        ]);
+            'error'   => 'Emissão de NF-e não implementada.',
+            'message' => 'A integração com o emissor fiscal ainda não foi configurada. Entre em contato com o suporte para habilitar esta funcionalidade.',
+        ], 501);
     }
 }

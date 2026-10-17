@@ -49,6 +49,9 @@ use App\Http\Controllers\API\Tenant\CustomerController;
 use App\Http\Controllers\API\Tenant\VehicleController;
 use App\Http\Controllers\API\Tenant\DriverController;
 use App\Http\Controllers\API\Tenant\UserController;
+use App\Http\Controllers\API\Tenant\CashRegisterController;
+use App\Http\Controllers\API\Tenant\CashSessionController;
+use App\Http\Controllers\API\Tenant\CashTransferController;
 
 /*
 |--------------------------------------------------------------------------
@@ -296,6 +299,28 @@ Route::prefix('api')->middleware([
         Route::get('/orders/{order}/messages', [StaffOrderMessageController::class, 'index']);
         Route::post('/orders/{order}/messages', [StaffOrderMessageController::class, 'store']);
     });
+
+    // Cash Registers & Multi-Level Treasury Routes
+    Route::get('/cash-registers', [CashRegisterController::class, 'index']);
+    Route::post('/cash-registers', [CashRegisterController::class, 'store']);
+    Route::put('/cash-registers/{id}', [CashRegisterController::class, 'update']);
+
+    // Cash Sessions (Operator & Central)
+    Route::get('/cash/session/current', [CashSessionController::class, 'current']);
+    Route::get('/cash/session/central', [CashSessionController::class, 'central']);
+    Route::post('/cash/session/open', [CashSessionController::class, 'open']);
+    Route::post('/cash/session/{id}/close', [CashSessionController::class, 'close']);
+    Route::get('/cash/session/{id}/movements', [CashSessionController::class, 'movements']);
+    Route::post('/cash/session/{id}/receive-os', [CashSessionController::class, 'receiveOrderPayment']);
+    Route::post('/cash/session/{id}/petty-expense', [CashSessionController::class, 'pettyExpense']);
+    Route::post('/cash/session/{id}/supply', [CashSessionController::class, 'supply']);
+
+    // Cash Transfers & Bleeds (Dual-Acceptance Handshake)
+    Route::get('/cash/transfers', [CashTransferController::class, 'index']);
+    Route::post('/cash/transfers', [CashTransferController::class, 'store']);
+    Route::post('/cash/transfers/{id}/accept', [CashTransferController::class, 'accept']);
+    Route::post('/cash/transfers/{id}/reject', [CashTransferController::class, 'reject']);
+    Route::get('/cash/transfers/pending-incoming/{destinationSessionId}', [CashTransferController::class, 'pendingIncoming']);
 
     // Status endpoint
     Route::get('/status', function () {

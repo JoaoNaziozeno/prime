@@ -19,6 +19,7 @@ const navigationItems = [
   { name: 'customers', label: 'Clientes', icon: 'bi-people-fill', disabled: false },
   { name: 'vehicles', label: 'Veículos', icon: 'bi-truck', disabled: false },
   { name: 'services', label: 'Ordens de Serviços', icon: 'bi-wrench-adjustable', disabled: false },
+  { name: 'cash', label: 'Caixa & Tesouraria', icon: 'bi-cash-coin', disabled: false },
   { name: 'products', label: 'Estoque e Produtos', icon: 'bi-box-seam-fill', disabled: false },
   { name: 'employees', label: 'Funcionários', icon: 'bi-person-badge', disabled: false },
   { name: 'users', label: 'Usuários e Controle', icon: 'bi-shield-lock-fill', disabled: false },
